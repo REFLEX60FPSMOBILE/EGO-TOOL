@@ -1,5 +1,5 @@
 /*
- * Shoyz Tools - A comprehensive Discord tool suite for Vencord
+ * EGO TOOL - A comprehensive Discord tool suite for Vencord
  * 
  * This plugin provides:
  * - Advanced badge hiding with visual selection
@@ -11,7 +11,7 @@
  * - Export/Import configurations
  * - OSINT capabilities for public data analysis
  * 
- * Author: REFLEX60FPSMOBILE
+ * Author: shoyzontop
  * Version: 1.0.0
  */
 
@@ -375,10 +375,10 @@ function applyUISettings() {
 }
 
 function applyTheme(theme: UITheme) {
-    const style = document.getElementById("vc-shoyz-tools-theme");
+    const style = document.getElementById("vc-ego-tool-theme");
     if (!style) {
         const newStyle = document.createElement("style");
-        newStyle.id = "vc-shoyz-tools-theme";
+        newStyle.id = "vc-ego-tool-theme";
         document.head.appendChild(newStyle);
     }
     
@@ -832,10 +832,10 @@ function setupServerObserver() {
 // ============================================================================
 
 export default definePlugin({
-    name: "Shoyz Tools",
+    name: "EGO TOOL",
     description: "A comprehensive Discord tool suite with OSINT capabilities, badge management, UI customization, and server analysis",
     authors: [
-        { name: "REFLEX60FPSMOBILE", id: 0n },
+        { name: "shoyzontop", id: 0n },
     ],
     version: "1.0.0",
     settings,
@@ -922,7 +922,7 @@ export default definePlugin({
         
         // Remove injected styles
         const styles = [
-            "vc-shoyz-tools-theme",
+            "vc-ego-tool-theme",
             "vc-hide-timestamps",
             "vc-hide-avatars",
             "vc-compact-mode",
