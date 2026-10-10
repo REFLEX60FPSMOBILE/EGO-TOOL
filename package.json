@@ -1,6 +1,6 @@
 {
-  "name": "shoyz-tools",
-  "description": "Professional Vencord plugin suite — OSINT, UI customization & moderation tools. Educational use only.",
+  "name": "ego-tool",
+  "description": "EGO TOOL — Professional Vencord plugin suite: OSINT, UI customization & moderation tools. Made by shoyzontop. Educational use only.",
   "keywords": [
     "vencord",
     "discord",
@@ -10,7 +10,7 @@
     "plugin",
     "discord-plugin",
     "badge-manager",
-    "shoyz-tools"
+    "ego-tool"
   ],
   "homepage": "https://discord.gg/jGXd8adHPJ",
   "license": "GPL-3.0"
