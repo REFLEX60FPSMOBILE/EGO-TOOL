@@ -40,27 +40,27 @@ It bundles an educational OSINT module, deep UI customization, and powerful mode
 
 ## ⚡ Installation
 
-### One-click (recommended)
+### One-click injection (recommended)
 
 **Windows** — download the repo (Code → Download ZIP), extract it, then run:
 ```bat
-install.bat
+inject.bat
 ```
 
 **Linux / macOS / Git Bash** — from the repo folder:
 ```bash
-chmod +x install.sh
-./install.sh
+chmod +x inject.sh
+./inject.sh
 ```
 
-> The installer auto-detects your Vencord source folder, clones EGO TOOL into `src/userplugins/EGO-Tool`, and rebuilds Vencord with `pnpm build`.
+> The injector auto-detects your Vencord source folder, clones EGO TOOL into `src/userplugins/EGO-Tool`, and rebuilds Vencord with `pnpm build`.
 > If it cannot find Vencord, pass the path manually:
 ```bash
-./install.sh --vencord-dir /path/to/Vencord   # Linux / macOS
-powershell -ExecutionPolicy Bypass -File install.ps1 -VencordDir "C:\path\to\Vencord"  # Windows
+./inject.sh --vencord-dir /path/to/Vencord   # Linux / macOS
+powershell -ExecutionPolicy Bypass -File inject.ps1 -VencordDir "C:\path\to\Vencord"  # Windows
 ```
 
-### Manual install
+### Manual injection
 
 1. Make sure you have **Vencord installed from source** ([guide](https://docs.vencord.dev/installing/)).
 2. Clone the plugin inside the userplugins folder:
@@ -75,11 +75,11 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -VencordDir "C:\path\to\Ven
    ```
 4. Fully restart Discord → **Settings → Vencord → Plugins → enable EGO TOOL**.
 
-### Uninstall
+### Remove
 
 ```bash
-./install.sh --uninstall                                        # Linux / macOS
-powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall  # Windows
+./inject.sh --remove                                        # Linux / macOS
+powershell -ExecutionPolicy Bypass -File inject.ps1 -Remove  # Windows
 ```
 
 ## 🏛️ Join Our Discord
