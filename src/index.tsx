@@ -30,7 +30,7 @@ import type {
     PluginSettings,
     ServerSettings,
     ExportData
-} from "@types";
+} from "./types";
 
 // Import constants and utilities
 import { 
@@ -41,7 +41,7 @@ import {
     DEFAULT_MODERATION_RULES,
     DEFAULT_SHORTCUTS,
     MODERATION_ACTIONS 
-} from "@utils/constants";
+} from "./utils/constants";
 
 import { 
     generateBadgeKey, 
@@ -53,12 +53,12 @@ import {
     deepClone,
     generateId,
     waitForSelector 
-} from "@utils/helpers";
+} from "./utils/helpers";
 
-import { getCurrentServerId, getServerSettings, mergeServerSettings } from "@utils/serverHelpers";
+import { getCurrentServerId, getServerSettings, mergeServerSettings } from "./utils/serverHelpers";
 
 // Import components
-import SettingsPanel from "@components/SettingsPanel";
+import SettingsPanel from "./components/SettingsPanel";
 
 // ============================================================================
 // SETTINGS DEFINITION
