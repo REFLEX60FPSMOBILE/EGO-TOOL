@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from "react";
-import { UICustomization, UITheme, PRESET_THEMES } from "@types";
-import { CardStyles, InputStyles, ButtonStyles, SwitchStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useState, useCallback } from "@webpack/common";
+import { UICustomization, UITheme, PRESET_THEMES } from "../types";
+import { CardStyles, InputStyles, ButtonStyles, SwitchStyles } from "../styles";
+import { DiscordColors } from "../styles";
 
 interface UICustomizationProps {
     settings: UICustomization;

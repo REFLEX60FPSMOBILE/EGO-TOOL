@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useState, useCallback, useMemo } from "@webpack/common";
+import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
+import { DiscordColors } from "../../styles";
 import { 
     ExtractedLink, 
     ExtractedEmail, 
@@ -8,7 +8,7 @@ import {
     DiscordMessage,
     RiskLevel,
     RISK_LEVELS
-} from "@types/osint";
+} from "../../types/osint";
 import { 
     extractLinks, 
     extractEmails, 
@@ -16,7 +16,7 @@ import {
     extractDiscordInvites,
     isSafeUrl,
     formatNumber
-} from "@utils/osintHelpers";
+} from "../../utils/osintHelpers";
 
 // Mock data for demonstration
 const MOCK_MESSAGES: DiscordMessage[] = [

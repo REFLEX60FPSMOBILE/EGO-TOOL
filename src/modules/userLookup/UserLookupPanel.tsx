@@ -1,4 +1,4 @@
-import React from "react";
+import { React } from "@webpack/common";
 import { useUserLookup } from "./useUserLookup";
 
 export function UserLookupPanel() {

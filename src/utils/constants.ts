@@ -1,4 +1,4 @@
-// Constants for Shoyz Tools plugin
+// Constants for EGO TOOL plugin
 
 // CSS selectors for badges
 export const BADGE_SELECTORS = {

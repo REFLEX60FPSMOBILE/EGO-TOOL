@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useState, useCallback, useMemo } from "@webpack/common";
+import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../styles";
+import { DiscordColors } from "../styles";
 
 interface ServerSettingsProps {
     serverSettings: Record<string, {

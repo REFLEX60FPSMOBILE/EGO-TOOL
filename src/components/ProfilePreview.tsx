@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { BadgeInfo } from "@types";
-import { CardStyles, ButtonStyles } from "@styles";
-import { DiscordColors } from "@styles";
-import { CUSTOM_ATTRS } from "@utils/constants";
+import { React, useState, useEffect, useRef, useCallback } from "@webpack/common";
+import { BadgeInfo } from "../types";
+import { CardStyles, ButtonStyles } from "../styles";
+import { DiscordColors } from "../styles";
+import { CUSTOM_ATTRS } from "../utils/constants";
 
 interface ProfilePreviewProps {
     catalog: Record<string, BadgeInfo>;

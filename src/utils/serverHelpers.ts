@@ -1,4 +1,4 @@
-// Server-specific settings utilities for Shoyz Tools
+// Server-specific settings utilities for EGO TOOL
 
 import { BADGE_SELECTORS, CUSTOM_ATTRS } from "./constants";
 import { generateBadgeKey, getBadgeLabel, resolveBadgeTarget, setElementHidden } from "./helpers";
@@ -7,9 +7,9 @@ import { generateBadgeKey, getBadgeLabel, resolveBadgeTarget, setElementHidden }
 export function getCurrentServerId(): string | null {
     try {
         // Try to get ID from URL
-        const match = window.location.pathname.match(^/channels/(\d+)/|/channels/@me/(\d+)/|/guilds/(\d+)/);
+        const match = window.location.pathname.match(/\/channels\/(?:@me\/)?(\d+)/);
         if (match) {
-            return match[1] || match[2] || match[3] || null;
+            return match[1] || null;
         }
         
         // Try to get from DOM elements

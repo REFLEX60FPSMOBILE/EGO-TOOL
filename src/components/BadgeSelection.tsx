@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { BadgeInfo } from "@types";
-import { CardStyles, ButtonStyles, ListStyles, InputStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useState, useEffect, useCallback } from "@webpack/common";
+import { BadgeInfo } from "../types";
+import { CardStyles, ButtonStyles, ListStyles, InputStyles } from "../styles";
+import { DiscordColors } from "../styles";
 
 interface BadgeSelectionProps {
     catalog: Record<string, BadgeInfo>;

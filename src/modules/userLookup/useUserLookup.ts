@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from "@webpack/common";
 import { buildUserLookupResult, getThreatLevel, getThreatColor } from "./userLookupService";
 import type { UserLookupResult } from "../../types/osint";
 

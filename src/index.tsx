@@ -546,7 +546,7 @@ function resetModerationStats() {
     settings.store.moderationStats = getDefaultModerationStats();
 }
 
-let moderationObserver: MutationObserver | null = null;
+
 
 function setupModerationObserver() {
     if (moderationObserver) return;

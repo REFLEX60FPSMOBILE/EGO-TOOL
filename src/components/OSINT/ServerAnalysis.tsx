@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "@styles";
-import { DiscordColors } from "@styles";
-import { DiscordGuild, GuildRole, GuildChannel, RiskLevel, RISK_LEVELS, ThreatIndicator, SecurityAssessment } from "@types/osint";
-import { formatDate, formatNumber, generateGuildSummary } from "@utils/osintHelpers";
+import { React, useState, useCallback, useEffect, useMemo } from "@webpack/common";
+import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
+import { DiscordColors } from "../../styles";
+import { DiscordGuild, GuildRole, GuildChannel, RiskLevel, RISK_LEVELS, ThreatIndicator, SecurityAssessment } from "../../types/osint";
+import { formatDate, formatNumber, generateGuildSummary } from "../../utils/osintHelpers";
 
 // Mock data for demonstration
 const MOCK_GUILDS: DiscordGuild[] = [

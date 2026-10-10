@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from "react";
-import { CardStyles, ButtonStyles, TabStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useState, useCallback } from "@webpack/common";
+import { CardStyles, ButtonStyles, TabStyles } from "../../styles";
+import { DiscordColors } from "../../styles";
 import UserLookup from "./UserLookup";
 import ServerAnalysis from "./ServerAnalysis";
 import MessageScanner from "./MessageScanner";

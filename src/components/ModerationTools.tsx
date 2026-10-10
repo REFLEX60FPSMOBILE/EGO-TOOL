@@ -1,8 +1,8 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { ModerationRule, ModerationStats, MODERATION_ACTIONS } from "@types";
-import { CardStyles, InputStyles, ButtonStyles, ListStyles, SwitchStyles } from "@styles";
-import { DiscordColors } from "@styles";
-import { deepClone, generateId } from "@utils/helpers";
+import { React, useState, useCallback, useMemo } from "@webpack/common";
+import { ModerationRule, ModerationStats, MODERATION_ACTIONS } from "../types";
+import { CardStyles, InputStyles, ButtonStyles, ListStyles, SwitchStyles } from "../styles";
+import { DiscordColors } from "../styles";
+import { deepClone, generateId } from "../utils/helpers";
 
 interface ModerationToolsProps {
     rules: ModerationRule[];

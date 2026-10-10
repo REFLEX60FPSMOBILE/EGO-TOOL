@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "@styles";
-import { DiscordColors } from "@styles";
-import { DiscordUser, UserBadge, RiskLevel, RISK_LEVELS } from "@types/osint";
+import { React, useState, useCallback, useEffect, useMemo } from "@webpack/common";
+import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
+import { DiscordColors } from "../../styles";
+import { DiscordUser, UserBadge, RiskLevel, RISK_LEVELS } from "../../types/osint";
 import { 
     formatDate, 
     getAccountAge, 
@@ -12,7 +12,7 @@ import {
     isModerator,
     generateUserSummary,
     calculateUserThreatScore
-} from "@utils/osintHelpers";
+} from "../../utils/osintHelpers";
 
 interface UserLookupProps {
     onUserSelect: (user: DiscordUser) => void;

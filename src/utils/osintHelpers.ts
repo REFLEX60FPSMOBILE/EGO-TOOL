@@ -1,4 +1,4 @@
-// OSINT utility functions for Shoyz Tools
+// OSINT utility functions for EGO TOOL
 // All functions process publicly available data from Discord's API
 
 import { 
@@ -7,7 +7,7 @@ import {
     ExtractedLink, 
     ExtractedEmail,
     ExtractedPhone
-} from "@types/osint";
+} from "../types/osint";
 
 // Regular expressions for data extraction
 const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;

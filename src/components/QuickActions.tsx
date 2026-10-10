@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from "react";
-import { QuickAction } from "@types";
-import { CardStyles, ButtonStyles, ListStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useCallback, useMemo } from "@webpack/common";
+import { QuickAction } from "../types";
+import { CardStyles, ButtonStyles, ListStyles } from "../styles";
+import { DiscordColors } from "../styles";
 
 interface QuickActionsProps {
     actions: QuickAction[];

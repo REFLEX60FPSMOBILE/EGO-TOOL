@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { CardStyles, ButtonStyles, TabStyles } from "@styles";
-import { DiscordColors } from "@styles";
+import { React, useState, useCallback, useMemo } from "@webpack/common";
+import { CardStyles, ButtonStyles, TabStyles } from "../styles";
+import { DiscordColors } from "../styles";
 import ProfilePreview from "./ProfilePreview";
 import BadgeSelection from "./BadgeSelection";
 import UICustomizationPanel from "./UICustomization";
@@ -9,7 +9,7 @@ import QuickActions from "./QuickActions";
 import ServerSettings from "./ServerSettings";
 import ExportImport from "./ExportImport";
 import OSINTDashboard from "./OSINT/OSINTDashboard";
-import { BadgeInfo, UICustomization, ModerationRule, ModerationStats, QuickAction, ServerSettings, ExportData } from "@types";
+import { BadgeInfo, UICustomization, ModerationRule, ModerationStats, QuickAction, ServerSettings, ExportData } from "../types";
 
 interface SettingsPanelProps {
     // Badges
@@ -236,7 +236,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     margin: 0,
                     marginBottom: "4px",
                 }}>
-                    Shoyz Tools
+                    EGO TOOL
                 </h2>
                 <p style={{
                     color: DiscordColors.textMuted,
@@ -278,7 +278,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 color: DiscordColors.textMuted,
                 textAlign: "center",
             }}>
-                Shoyz Tools v1.0.0 - A Vencord plugin by REFLEX60FPSMOBILE
+                EGO TOOL v1.0.0 - A Vencord plugin by REFLEX60FPSMOBILE
             </div>
         </div>
     );

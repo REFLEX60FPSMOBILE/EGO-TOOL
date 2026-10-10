@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from "react";
-import { CardStyles, ButtonStyles, InputStyles } from "@styles";
-import { DiscordColors } from "@styles";
-import { ExportData } from "@types";
+import { React, useState, useCallback } from "@webpack/common";
+import { CardStyles, ButtonStyles, InputStyles } from "../styles";
+import { DiscordColors } from "../styles";
+import { ExportData } from "../types";
 
 interface ExportImportProps {
     onExport: () => ExportData;
