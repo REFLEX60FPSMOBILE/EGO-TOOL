@@ -9,7 +9,7 @@ import QuickActions from "./QuickActions";
 import ServerSettings from "./ServerSettings";
 import ExportImport from "./ExportImport";
 import OSINTDashboard from "./OSINT/OSINTDashboard";
-import { BadgeInfo, UICustomization, ModerationRule, ModerationStats, QuickAction, ServerSettings, ExportData } from "../types";
+import type { BadgeInfo, UICustomization, ModerationRule, ModerationStats, QuickAction, ServerSettings, ExportData } from "../types";
 
 interface SettingsPanelProps {
     // Badges
@@ -278,7 +278,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 color: DiscordColors.textMuted,
                 textAlign: "center",
             }}>
-                EGO TOOL v1.0.0 - A Vencord plugin by REFLEX60FPSMOBILE
+                EGO TOOL v1.0.0 - A Vencord plugin by shoyzontop
             </div>
         </div>
     );

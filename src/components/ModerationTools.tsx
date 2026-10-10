@@ -1,5 +1,6 @@
 import { React, useState, useCallback, useMemo } from "@webpack/common";
-import { ModerationRule, ModerationStats, MODERATION_ACTIONS } from "../types";
+import type { ModerationRule, ModerationStats } from "../types";
+import { MODERATION_ACTIONS } from "../utils/constants";
 import { CardStyles, InputStyles, ButtonStyles, ListStyles, SwitchStyles } from "../styles";
 import { DiscordColors } from "../styles";
 import { deepClone, generateId } from "../utils/helpers";

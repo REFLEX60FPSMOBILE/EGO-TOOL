@@ -1,4 +1,5 @@
-import { BadgeInfo, BADGE_CATEGORIES } from "../types";
+import type { BadgeInfo } from "../types";
+import { BADGE_CATEGORIES } from "./constants";
 import { BADGE_SELECTORS, CUSTOM_ATTRS } from "./constants";
 
 // Generate a unique key for a badge
