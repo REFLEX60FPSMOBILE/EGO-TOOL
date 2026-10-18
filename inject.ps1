@@ -166,6 +166,17 @@ if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
     Write-Fail "pnpm is not installed. Install it with: npm install -g pnpm"
 }
 Push-Location $VencordDir
+
+# The plugin targets the CURRENT Vencord API — an outdated source checkout
+# fails to compile it (export removed upstream: copyWithToast, Toasts...).
+git pull --ff-only 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "" 
+    Write-Info "WARNING: could not fast-forward the Vencord source (local changes?)."
+    Write-Info "   If the build below fails with 'No matching export', update Vencord:"
+    Write-Info "   cd $VencordDir; git stash; git pull"
+}
+
 if (-not (Test-Path "$VencordDir\node_modules")) {
     Write-Info "Installing Vencord dependencies (pnpm i)..."
     pnpm i

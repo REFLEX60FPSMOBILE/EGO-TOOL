@@ -158,6 +158,16 @@ fi
 # ----------------------------------------------------------------
 command -v pnpm >/dev/null 2>&1 || fail "pnpm is not installed. Install it with: npm install -g pnpm"
 cd "$VENCORD_DIR"
+
+# The plugin targets the CURRENT Vencord API — an outdated source checkout
+# fails to compile it (export removed upstream: copyWithToast, Toasts...).
+git pull --ff-only >/dev/null 2>&1 || {
+    echo ""
+    info "WARNING: could not fast-forward the Vencord source (local changes?)."
+    info "   If the build below fails with 'No matching export', update Vencord:"
+    info "   cd $VENCORD_DIR && git stash && git pull"
+}
+
 [[ -d node_modules ]] || { info "Installing Vencord dependencies (pnpm i)..."; pnpm i; }
 info "Building patched client (pnpm build)..."
 pnpm build || fail "Build failed - the plugin(s) were placed in userplugins but the client was NOT patched. Fix the error above and re-run."
