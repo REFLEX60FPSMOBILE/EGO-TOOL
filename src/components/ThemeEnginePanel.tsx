@@ -7,8 +7,10 @@ import type { ThemeEngineSettings } from "../utils/themeEngine";
 interface ThemeEnginePanelProps {
     themeEngine: ThemeEngineSettings;
     uiModes: UiModes;
+    gamingAutoDnd: boolean;
     onThemeEngineUpdate: (updates: Partial<ThemeEngineSettings>) => void;
     onUiModesUpdate: (updates: Partial<UiModes>) => void;
+    onGamingAutoDndUpdate: (value: boolean) => void;
 }
 
 const MODES: { key: keyof UiModes; label: string; description: string; icon: string }[] = [
@@ -24,6 +26,18 @@ const MODES: { key: keyof UiModes; label: string; description: string; icon: str
         description: "Masque les éléments sensibles à l'écran (badge de compte, compteurs de notifications, badges texte).",
         icon: "🎥",
     },
+    {
+        key: "gaming",
+        label: "Mode Gaming",
+        description: "Compact, sombre, notifications réduites. Combine avec l'Auto-DND ci-dessous.",
+        icon: "🎮",
+    },
+    {
+        key: "staff",
+        label: "Mode Staff",
+        description: "Densité info : horodatages privilégiés, mise en page dense. Pour permissions/audit log, active aussi PermissionsViewer.",
+        icon: "🛡️",
+    },
 ];
 
 const SLIDERS: { key: keyof ThemeEngineSettings; label: string; description: string; min: number; max: number }[] = [
@@ -35,8 +49,10 @@ const SLIDERS: { key: keyof ThemeEngineSettings; label: string; description: str
 const ThemeEnginePanel: React.FC<ThemeEnginePanelProps> = ({
     themeEngine,
     uiModes,
+    gamingAutoDnd,
     onThemeEngineUpdate,
     onUiModesUpdate,
+    onGamingAutoDndUpdate,
 }) => {
     const handlePreset = useCallback((id: string) => {
         onThemeEngineUpdate({ preset: id });
@@ -241,6 +257,29 @@ const ThemeEnginePanel: React.FC<ThemeEnginePanelProps> = ({
                             </div>
                         </div>
                     ))}
+
+                    {/* Gaming auto-DND */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", borderTop: `1px solid ${DiscordColors.border}` }}>
+                        <div>
+                            <div style={{ fontSize: "14px", fontWeight: 500, color: DiscordColors.textNormal }}>
+                                🚫 Auto-DND quand un jeu tourne
+                            </div>
+                            <div style={{ fontSize: "12px", color: DiscordColors.textMuted }}>
+                                Passe en Ne pas déranger quand un jeu est lancé, et restaure ton statut à la fermeture (inspiré d'AutoDNDWhilePlaying).
+                            </div>
+                        </div>
+                        <div style={SwitchStyles.container}>
+                            <label style={SwitchStyles.label}>
+                                <input
+                                    type="checkbox"
+                                    checked={gamingAutoDnd}
+                                    onChange={(e) => onGamingAutoDndUpdate(e.target.checked)}
+                                    style={SwitchStyles.input}
+                                />
+                                <span style={SwitchStyles.slider} />
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div style={{ fontSize: "11px", color: DiscordColors.textMuted, marginTop: "12px" }}>
                     Astuce : les presets appliquent les variables CSS (--bg, --surface, --accent, --radius, --blur). Complète avec le CSS custom de l'onglet UI Options.

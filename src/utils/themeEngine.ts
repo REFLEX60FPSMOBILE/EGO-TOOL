@@ -23,6 +23,8 @@ export interface ThemeEngineSettings {
 export interface UiModes {
     focus: boolean;
     stream: boolean;
+    gaming: boolean;
+    staff: boolean;
 }
 
 interface ThemePreset {
@@ -136,8 +138,12 @@ function rgba(c: [number, number, number], alpha: number): string {
 }
 
 export const THEME_STYLE_ID = "ego-theme-engine";
-export const FOCUS_BODY_CLASS = "ego-mode-focus";
-export const STREAM_BODY_CLASS = "ego-mode-stream";
+export const BODY_CLASSES = {
+    focus: "ego-mode-focus",
+    stream: "ego-mode-stream",
+    gaming: "ego-mode-gaming",
+    staff: "ego-mode-staff",
+} as const;
 
 function buildThemeCSS(engine: ThemeEngineSettings, modes: UiModes): string {
     const preset = getPresetById(engine.preset);
@@ -226,6 +232,10 @@ function buildThemeCSS(engine: ThemeEngineSettings, modes: UiModes): string {
             backdrop-filter: none !important;
             animation: none !important;
             transition: none !important;
+        }
+        [class*="contents"][class*="message"], [class*="messageListItem"], [class*="channelTextArea"] {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 48px;
         }`
         );
     }
@@ -234,11 +244,11 @@ function buildThemeCSS(engine: ThemeEngineSettings, modes: UiModes): string {
     if (modes.focus) {
         css.push(
             `
-        body.${FOCUS_BODY_CLASS} [class*="membersWrap"],
-        body.${FOCUS_BODY_CLASS} [class*="nowPlayingColumn"] {
+        body.${BODY_CLASSES.focus} [class*="membersWrap"],
+        body.${BODY_CLASSES.focus} [class*="nowPlayingColumn"] {
             display: none !important;
         }
-        body.${FOCUS_BODY_CLASS} * {
+        body.${BODY_CLASSES.focus} * {
             animation: none !important;
         }`
         );
@@ -248,10 +258,45 @@ function buildThemeCSS(engine: ThemeEngineSettings, modes: UiModes): string {
     if (modes.stream) {
         css.push(
             `
-        body.${STREAM_BODY_CLASS} [class*="nameTag"],
-        body.${STREAM_BODY_CLASS} [class*="numberBadge"],
-        body.${STREAM_BODY_CLASS} [class*="textBadge"] {
+        body.${BODY_CLASSES.stream} [class*="nameTag"],
+        body.${BODY_CLASSES.stream} [class*="numberBadge"],
+        body.${BODY_CLASSES.stream} [class*="textBadge"] {
             display: none !important;
+        }`
+        );
+    }
+
+    // 8. Gaming mode — compact, sombre, notifications réduites (inspiré de GameZen)
+    if (modes.gaming) {
+        css.push(
+            `
+        body.${BODY_CLASSES.gaming} [class*="numberBadge"],
+        body.${BODY_CLASSES.gaming} [class*="textBadge"],
+        body.${BODY_CLASSES.gaming} [class*="giftIconContainer"] {
+            display: none !important;
+        }
+        body.${BODY_CLASSES.gaming} [class*="message"] {
+            padding: 2px 10px !important;
+            line-height: 1.15 !important;
+        }`
+        );
+    }
+
+    // 9. Staff mode — densité info : horodatages et IDs toujours visibles, mise en page dense
+    if (modes.staff) {
+        css.push(
+            `
+        body.${BODY_CLASSES.staff} [class*="timestamp"] {
+            opacity: 1 !important;
+            font-variant-numeric: tabular-nums;
+        }
+        body.${BODY_CLASSES.staff} [class*="message"],
+        body.${BODY_CLASSES.staff} [class*="members"][class*="member_"] {
+            padding: 2px 8px !important;
+        }
+        body.${BODY_CLASSES.staff} [class*="roleDot"] {
+            border-radius: 50%;
+            box-shadow: 0 0 4px var(--ego-accent-glow);
         }`
         );
     }
@@ -273,11 +318,16 @@ export function applyThemeEngine(engine: ThemeEngineSettings, modes: UiModes): v
     const styleEl = ensureStyleElement(THEME_STYLE_ID);
     styleEl.textContent = buildThemeCSS(engine, modes);
 
-    document.body.classList.toggle(FOCUS_BODY_CLASS, !!modes.focus);
-    document.body.classList.toggle(STREAM_BODY_CLASS, !!modes.stream);
+    for (const mode of Object.keys(BODY_CLASSES) as (keyof typeof BODY_CLASSES)[]) {
+        document.body.classList.toggle(BODY_CLASSES[mode], !!modes[mode]);
+    }
 }
 
 export function clearThemeEngine(): void {
     document.getElementById(THEME_STYLE_ID)?.remove();
-    document.body.classList.remove(FOCUS_BODY_CLASS, STREAM_BODY_CLASS);
+    document.body.classList.remove(...Object.values(BODY_CLASSES));
+}
+
+export function getDefaultUiModes(): UiModes {
+    return { focus: false, stream: false, gaming: false, staff: false };
 }

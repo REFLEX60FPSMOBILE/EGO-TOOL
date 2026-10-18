@@ -119,6 +119,15 @@ export function generateId(): string {
     return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
 }
 
+// Hash a PIN (djb2) before storing it — PasscodeLock
+export function hashPin(pin: string): string {
+    let hash = 5381;
+    for (let i = 0; i < pin.length; i++) {
+        hash = ((hash << 5) + hash + pin.charCodeAt(i)) >>> 0;
+    }
+    return hash.toString(16);
+}
+
 // Wait for selector to appear in DOM
 export function waitForSelector(selector: string, timeout: number = 10000): Promise<Element | null> {
     return new Promise((resolve) => {

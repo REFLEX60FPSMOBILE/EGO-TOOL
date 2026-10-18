@@ -10,6 +10,7 @@ import ServerSettings from "./ServerSettings";
 import ExportImport from "./ExportImport";
 import OSINTDashboard from "./OSINT/OSINTDashboard";
 import ThemeEnginePanel from "./ThemeEnginePanel";
+import ProductivityPanel from "./ProductivityPanel";
 import type { 
     BadgeInfo, 
     UICustomization, 
@@ -18,7 +19,10 @@ import type {
     QuickAction, 
     ServerSettings as ServerSettingsConfig,
     ExportData,
-    UiModes
+    UiModes,
+    TodoItem,
+    TodoPriority,
+    ReminderItem
 } from "../types";
 import type { ThemeEngineSettings } from "../utils/themeEngine";
 
@@ -63,6 +67,25 @@ interface SettingsPanelProps {
     uiModes: UiModes;
     onThemeEngineUpdate: (updates: Partial<ThemeEngineSettings>) => void;
     onUiModesUpdate: (updates: Partial<UiModes>) => void;
+
+    // Gaming
+    gamingAutoDnd: boolean;
+    onGamingAutoDndUpdate: (value: boolean) => void;
+
+    // Productivity
+    todoTasks: TodoItem[];
+    reminders: ReminderItem[];
+    onAddTodo: (text: string, priority: TodoPriority, deadline: number) => TodoItem;
+    onToggleTodo: (id: string) => void;
+    onRemoveTodo: (id: string) => void;
+    onClearDoneTodos: () => void;
+    onAddReminder: (text: string, dueAt: number, repeatMinutes: number) => ReminderItem;
+    onRemoveReminder: (id: string) => void;
+
+    // Security
+    passcodeEnabled: boolean;
+    onSetPasscode: (pin: string | null) => void;
+    onSetPasscodeEnabled: (value: boolean) => void;
     
     // Export/Import
     onExport: () => ExportData;
@@ -111,6 +134,25 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     onThemeEngineUpdate,
     onUiModesUpdate,
     
+    // Gaming
+    gamingAutoDnd,
+    onGamingAutoDndUpdate,
+    
+    // Productivity
+    todoTasks,
+    reminders,
+    onAddTodo,
+    onToggleTodo,
+    onRemoveTodo,
+    onClearDoneTodos,
+    onAddReminder,
+    onRemoveReminder,
+    
+    // Security
+    passcodeEnabled,
+    onSetPasscode,
+    onSetPasscodeEnabled,
+    
     // Export/Import
     onExport,
     onImport,
@@ -123,6 +165,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         { id: "themes", label: "Themes & Modes", icon: "🎨" },
         { id: "servers", label: "Per Server", icon: "🏢" },
         { id: "osint", label: "OSINT Tools", icon: "🔍" },
+        { id: "productivity", label: "Productivité", icon: "✅" },
         { id: "ui", label: "UI Options", icon: "🧩" },
         { id: "moderation", label: "Moderation", icon: "🛡️" },
         { id: "actions", label: "Quick Actions", icon: "⚡" },
@@ -155,8 +198,27 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <ThemeEnginePanel
                         themeEngine={themeEngine}
                         uiModes={uiModes}
+                        gamingAutoDnd={gamingAutoDnd}
                         onThemeEngineUpdate={onThemeEngineUpdate}
                         onUiModesUpdate={onUiModesUpdate}
+                        onGamingAutoDndUpdate={onGamingAutoDndUpdate}
+                    />
+                );
+            
+            case "productivity":
+                return (
+                    <ProductivityPanel
+                        todoTasks={todoTasks}
+                        reminders={reminders}
+                        passcodeEnabled={passcodeEnabled}
+                        onAddTodo={onAddTodo}
+                        onToggleTodo={onToggleTodo}
+                        onRemoveTodo={onRemoveTodo}
+                        onClearDoneTodos={onClearDoneTodos}
+                        onAddReminder={onAddReminder}
+                        onRemoveReminder={onRemoveReminder}
+                        onSetPasscode={onSetPasscode}
+                        onSetPasscodeEnabled={onSetPasscodeEnabled}
                     />
                 );
             
@@ -247,6 +309,23 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         onResetServer,
         onExport,
         onImport,
+        themeEngine,
+        uiModes,
+        onThemeEngineUpdate,
+        onUiModesUpdate,
+        gamingAutoDnd,
+        onGamingAutoDndUpdate,
+        todoTasks,
+        reminders,
+        onAddTodo,
+        onToggleTodo,
+        onRemoveTodo,
+        onClearDoneTodos,
+        onAddReminder,
+        onRemoveReminder,
+        passcodeEnabled,
+        onSetPasscode,
+        onSetPasscodeEnabled,
     ]);
 
     return (

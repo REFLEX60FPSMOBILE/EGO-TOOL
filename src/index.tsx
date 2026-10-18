@@ -16,8 +16,9 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { getUserSettingLazy } from "@api/UserSettings";
 import definePlugin, { OptionType } from "@utils/types";
-import { React } from "@webpack/common";
+import { React, FluxDispatcher, Toasts } from "@webpack/common";
 
 // Import types
 import type { 
@@ -29,7 +30,11 @@ import type {
     QuickAction,
     PluginSettings,
     ServerSettings,
-    ExportData
+    ExportData,
+    TodoItem,
+    TodoPriority,
+    ReminderItem,
+    UiModes
 } from "./types";
 
 // Import constants and utilities
@@ -43,14 +48,16 @@ import {
     MODERATION_ACTIONS 
 } from "./utils/constants";
 
-import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine } from "./utils/themeEngine";
+import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine, getDefaultUiModes } from "./utils/themeEngine";
 
 import { 
     generateBadgeKey, 
     getBadgeLabel, 
     resolveBadgeTarget, 
     setElementHidden,
-    debounce
+    debounce,
+    generateId,
+    hashPin
 } from "./utils/helpers";
 
 import { getCurrentServerId } from "./utils/serverHelpers";
@@ -114,13 +121,40 @@ const settings = definePluginSettings({
             
             // Theme Engine
             themeEngine={settings.store.themeEngine ?? getDefaultThemeEngineSettings()}
-            uiModes={settings.store.uiModes ?? { focus: false, stream: false }}
+            uiModes={settings.store.uiModes ?? getDefaultUiModes()}
             onThemeEngineUpdate={(updates) => updateThemeEngineSettings(updates)}
             onUiModesUpdate={(updates) => updateUiModes(updates)}
+            
+            // Gaming
+            gamingAutoDnd={settings.store.gamingAutoDnd ?? false}
+            onGamingAutoDndUpdate={(value) => {
+                settings.store.gamingAutoDnd = value;
+                setupDndAutomation();
+            }}
+            
+            // Productivity
+            todoTasks={settings.store.todoTasks ?? []}
+            reminders={settings.store.reminders ?? []}
+            onAddTodo={(text, priority, deadline) => addTodo(text, priority, deadline)}
+            onToggleTodo={(id) => toggleTodo(id)}
+            onRemoveTodo={(id) => removeTodo(id)}
+            onClearDoneTodos={() => clearDoneTodos()}
+            onAddReminder={(text, dueAt, repeatMinutes) => addReminder(text, dueAt, repeatMinutes)}
+            onRemoveReminder={(id) => removeReminder(id)}
+            
+            // Security
+            passcodeEnabled={settings.store.passcodeEnabled ?? false}
+            onSetPasscode={(pin) => setPasscode(pin)}
+            onSetPasscodeEnabled={(value) => setPasscodeEnabled(value)}
         />,
     },
 }).withPrivateSettings<PluginSettings & {
     serverSettings: Record<string, ServerSettings>;
+    gamingAutoDnd: boolean;
+    todoTasks: TodoItem[];
+    reminders: ReminderItem[];
+    passcode: string;
+    passcodeEnabled: boolean;
 }>();
 
 // ============================================================================
@@ -183,10 +217,259 @@ function updateThemeEngineSettings(updates: Partial<ReturnType<typeof getDefault
     applyThemeEngine();
 }
 
-function updateUiModes(updates: Partial<{ focus: boolean; stream: boolean }>) {
-    const current = settings.store.uiModes ?? { focus: false, stream: false };
+function updateUiModes(updates: Partial<UiModes>) {
+    const current = settings.store.uiModes ?? getDefaultUiModes();
     settings.store.uiModes = { ...current, ...updates };
     applyThemeEngine();
+}
+
+// ============================================================================
+// GAMING MODE — AUTO DND (inspired by Vencord's AutoDNDWhilePlaying)
+// ============================================================================
+
+let dndSavedStatus: string | null = null;
+let dndStatusModule: { getSetting(): string | undefined; updateSetting(value: string): Promise<void> | void } | null = null;
+let onRunningGamesChange: ((payload: unknown) => void) | null = null;
+
+function ensureDndModule() {
+    if (dndStatusModule) return dndStatusModule;
+    try {
+        dndStatusModule = getUserSettingLazy("status", "status");
+    } catch (e) {
+        console.log("EGO TOOL: unable to load the user status setting module", e);
+        dndStatusModule = null;
+    }
+    return dndStatusModule;
+}
+
+function handleRunningGamesChange(payload: unknown): void {
+    if (!(settings.store.gamingAutoDnd ?? false)) return;
+    const games = (payload as { games?: unknown[] } | null)?.games;
+    const gaming = Array.isArray(games) && games.length > 0;
+    
+    const mod = ensureDndModule();
+    if (!mod) return;
+    
+    const current = mod.getSetting();
+    
+    if (gaming) {
+        if (current === "invisible") return;
+        if (current !== "dnd") {
+            dndSavedStatus = current ?? null;
+            try { void mod.updateSetting("dnd"); } catch { /* noop */ }
+        }
+    } else if (dndSavedStatus !== null) {
+        const restore = dndSavedStatus;
+        dndSavedStatus = null;
+        if (current === "dnd") {
+            try { void mod.updateSetting(restore); } catch { /* noop */ }
+        }
+    }
+}
+
+function setupDndAutomation() {
+    if (!(settings.store.gamingAutoDnd ?? false)) return removeDndAutomation();
+    if (onRunningGamesChange) return;
+    onRunningGamesChange = handleRunningGamesChange;
+    try {
+        FluxDispatcher.subscribe("RUNNING_GAMES_CHANGE", onRunningGamesChange);
+    } catch (e) {
+        console.log("EGO TOOL: RUNNING_GAMES_CHANGE unavailable", e);
+        onRunningGamesChange = null;
+    }
+}
+
+function removeDndAutomation() {
+    if (onRunningGamesChange) {
+        try { FluxDispatcher.unsubscribe("RUNNING_GAMES_CHANGE", onRunningGamesChange); } catch { /* noop */ }
+        onRunningGamesChange = null;
+    }
+    // restore status if the automation is being turned off while a game is running
+    if (dndSavedStatus !== null) {
+        const mod = ensureDndModule();
+        const restore = dndSavedStatus;
+        dndSavedStatus = null;
+        if (mod && mod.getSetting() === "dnd") {
+            try { void mod.updateSetting(restore); } catch { /* noop */ }
+        }
+    }
+}
+
+// ============================================================================
+// PRODUCTIVITY — TO-DO LIST & REMINDERS (inspired by BetterDiscord's ToDoList/Reminder)
+// ============================================================================
+
+let reminderIntervalId: ReturnType<typeof setInterval> | null = null;
+
+function addTodo(text: string, priority: TodoPriority, deadline: number) {
+    const todos = settings.store.todoTasks ?? [];
+    const item: TodoItem = {
+        id: generateId(),
+        text: text.trim(),
+        priority,
+        done: false,
+        deadline,
+        createdAt: Date.now(),
+    };
+    settings.store.todoTasks = [...todos, item];
+    return item;
+}
+
+function toggleTodo(id: string) {
+    const todos = settings.store.todoTasks ?? [];
+    settings.store.todoTasks = todos.map(t => t.id === id ? { ...t, done: !t.done } : t);
+}
+
+function removeTodo(id: string) {
+    settings.store.todoTasks = (settings.store.todoTasks ?? []).filter(t => t.id !== id);
+}
+
+function clearDoneTodos() {
+    settings.store.todoTasks = (settings.store.todoTasks ?? []).filter(t => !t.done);
+}
+
+function addReminder(text: string, dueAt: number, repeatMinutes: number): ReminderItem {
+    const reminder: ReminderItem = {
+        id: generateId(),
+        text: text.trim(),
+        dueAt,
+        repeatMinutes,
+        createdAt: Date.now(),
+    };
+    settings.store.reminders = [...(settings.store.reminders ?? []), reminder];
+    return reminder;
+}
+
+function removeReminder(id: string) {
+    settings.store.reminders = (settings.store.reminders ?? []).filter(r => r.id !== id);
+}
+
+function checkDueReminders() {
+    const now = Date.now();
+    let reminders = settings.store.reminders ?? [];
+    let changed = false;
+    
+    for (const reminder of reminders) {
+        if (reminder.dueAt > now) continue;
+        
+        const overdueBy = now - reminder.dueAt;
+        if (overdueBy > 60000) continue; // fired while the client was closed — leave it alone
+        
+        try {
+            Toasts.show({ message: `⏰ ${reminder.text}` });
+        } catch (e) {
+            console.log("EGO TOOL: reminders", e);
+        }
+        
+        if (reminder.repeatMinutes > 0) {
+            // reschedule — dueAt may drift backwards from its miss, forward-correct it
+            let next = reminder.dueAt + reminder.repeatMinutes * 60000;
+            while (next <= now) next += reminder.repeatMinutes * 60000;
+            settings.store.reminders = (settings.store.reminders ?? []).map(r =>
+                r.id === reminder.id ? { ...r, dueAt: next } : r
+            );
+        } else {
+            settings.store.reminders = (settings.store.reminders ?? []).filter(r => r.id !== reminder.id);
+            changed = true;
+        }
+    }
+    
+    if (changed) {
+        settings.store.reminders = settings.store.reminders ?? [];
+    }
+}
+
+function setupReminderTicker() {
+    if (reminderIntervalId) return;
+    reminderIntervalId = setInterval(checkDueReminders, 30000);
+}
+
+function removeReminderTicker() {
+    if (reminderIntervalId) {
+        clearInterval(reminderIntervalId);
+        reminderIntervalId = null;
+    }
+}
+
+// ============================================================================
+// SECURITY — PASSCODE LOCK (overlay, inspired by BetterDiscord's PasscodeLock)
+// ============================================================================
+
+let passcodeAttempts = 0;
+
+function isClientLocked(): boolean {
+    return !!document.getElementById("ego-lock-overlay");
+}
+
+function lockClient() {
+    if (isClientLocked()) return;
+    const storedHash = settings.store.passcode ?? "";
+    if (!storedHash) return;
+    
+    const overlay = document.createElement("div");
+    overlay.id = "ego-lock-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,10,14,0.97);color:#eee;font-family:sans-serif";
+    overlay.innerHTML = `
+        <div style="font-size:22px;font-weight:700">🔒 EGO TOOL — client verrouillé</div>
+        <input id="ego-lock-input" type="password" inputmode="numeric" maxlength="8" placeholder="Code..." autocomplete="off"
+            style="font-size:20px;letter-spacing:6px;text-align:center;padding:10px;border-radius:8px;border:1px solid #444;background:#1c1c22;color:#fff;width:180px" />
+        <div id="ego-lock-msg" style="font-size:12px;color:#888">Entrez votre code pour déverrouiller.</div>
+        <button id="ego-lock-ok" type="button" style="padding:8px 18px;border-radius:6px;border:none;background:#5865f2;color:#fff;cursor:pointer;font-size:14px">Déverrouiller</button>
+        <div style="max-width:280px;text-align:center;font-size:11px;color:#666">
+            Mot de passe oublié ? Désactivez EGO TOOL depuis le launcher, ou allez dans Paramètres → Vencord et coupez le plugin.
+        </div>
+    `;
+    
+    const done = (): void => {
+        overlay.remove();
+    };
+    
+    const fail = (): void => {
+        const msg = overlay.querySelector("#ego-lock-msg");
+        passcodeAttempts++;
+        if (msg) msg.textContent = passcodeAttempts >= 10 ? "⚠️ 10 échecs. Désactivez le plugin si vous avez oublié le code." : `Code incorrect (${passcodeAttempts}).`;
+    };
+    
+    overlay.querySelector("#ego-lock-ok")?.addEventListener("click", () => {
+        const input = overlay.querySelector<HTMLInputElement>("#ego-lock-input");
+        if (input && hashPin(input.value) === storedHash) done();
+        else fail();
+    });
+    overlay.querySelector("#ego-lock-input")?.addEventListener("keydown", (e) => {
+        if ((e as KeyboardEvent).key === "Enter") {
+            const input = overlay.querySelector<HTMLInputElement>("#ego-lock-input");
+            if (input && hashPin(input.value) === storedHash) done();
+            else fail();
+        }
+    });
+    
+    (document.body ?? document.documentElement).appendChild(overlay);
+    (overlay.querySelector("#ego-lock-input") as HTMLInputElement | null)?.focus();
+}
+
+function setupPasscodeLock() {
+    if ((settings.store.passcodeEnabled ?? false) && (settings.store.passcode ?? "")) {
+        lockClient();
+    }
+}
+
+function setPasscode(pin: string | null) {
+    if (pin) {
+        settings.store.passcode = hashPin(pin);
+        settings.store.passcodeEnabled = true;
+        lockClient();
+    } else {
+        settings.store.passcode = "";
+        settings.store.passcodeEnabled = false;
+        document.getElementById("ego-lock-overlay")?.remove();
+        passcodeAttempts = 0;
+    }
+}
+
+function setPasscodeEnabled(value: boolean) {
+    settings.store.passcodeEnabled = value;
+    if (value && (settings.store.passcode ?? "")) lockClient();
+    else if (!value) document.getElementById("ego-lock-overlay")?.remove();
 }
 
 function getQuickActions(): QuickAction[] {
@@ -735,6 +1018,8 @@ function exportSettings(): ExportData {
             moderationStats: settings.store.moderationStats ?? getDefaultModerationStats(),
             enabledQuickActions: settings.store.enabledQuickActions ?? {},
             keyboardShortcuts: settings.store.keyboardShortcuts ?? DEFAULT_SHORTCUTS,
+            todoTasks: settings.store.todoTasks ?? [],
+            reminders: settings.store.reminders ?? [],
         },
         serverSettings: settings.store.serverSettings ?? {},
     };
@@ -753,6 +1038,8 @@ function importSettings(data: ExportData) {
             settings.store.moderationStats = data.settings.moderationStats ?? getDefaultModerationStats();
             settings.store.enabledQuickActions = data.settings.enabledQuickActions ?? {};
             settings.store.keyboardShortcuts = data.settings.keyboardShortcuts ?? DEFAULT_SHORTCUTS;
+            settings.store.todoTasks = data.settings.todoTasks ?? [];
+            settings.store.reminders = data.settings.reminders ?? [];
         }
         
         // Import server settings
@@ -901,11 +1188,26 @@ export default definePlugin({
         if (!settings.store.serverSettings) {
             settings.store.serverSettings = {};
         }
+        if (!settings.store.todoTasks) {
+            settings.store.todoTasks = [];
+        }
+        if (!settings.store.reminders) {
+            settings.store.reminders = [];
+        }
+        if (settings.store.gamingAutoDnd === undefined) {
+            settings.store.gamingAutoDnd = false;
+        }
+        if (settings.store.passcode === undefined) {
+            settings.store.passcode = "";
+        }
+        if (settings.store.passcodeEnabled === undefined) {
+            settings.store.passcodeEnabled = false;
+        }
         if (!settings.store.themeEngine) {
             settings.store.themeEngine = getDefaultThemeEngineSettings();
         }
         if (!settings.store.uiModes) {
-            settings.store.uiModes = { focus: false, stream: false };
+            settings.store.uiModes = getDefaultUiModes();
         }
         
         // Apply theme engine + contextual modes
@@ -932,6 +1234,11 @@ export default definePlugin({
         if (settings.store.moderationEnabled) {
             setupModerationObserver();
         }
+        
+        // Gaming auto-DND, reminders and passcode lock
+        setupDndAutomation();
+        setupReminderTicker();
+        setupPasscodeLock();
     },
     
     // Plugin stop
@@ -951,6 +1258,10 @@ export default definePlugin({
             moderationObserver.disconnect();
             moderationObserver = null;
         }
+        
+        // Teardown productivity + security + gaming
+        removeDndAutomation();
+        removeReminderTicker();
         
         // Reset
         currentServerId = null;

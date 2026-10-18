@@ -1,13 +1,10 @@
 // Core type definitions for Shoyz Tools
 
-import type { ThemeEngineSettings } from "../utils/themeEngine";
+import type { ThemeEngineSettings, UiModes as EngineUiModes } from "../utils/themeEngine";
 
 export type { ThemeEngineSettings } from "../utils/themeEngine";
-
-export interface UiModes {
-    focus: boolean;
-    stream: boolean;
-}
+export type { UiModes } from "../utils/themeEngine";
+export type UiModesLike = EngineUiModes;
 
 // Badge types
 export interface BadgeInfo {
@@ -95,7 +92,41 @@ export interface PluginSettings {
 
     // Theme engine
     themeEngine: ThemeEngineSettings;
-    uiModes: UiModes;
+    uiModes: EngineUiModes;
+
+    // Gaming mode extras
+    gamingAutoDnd: boolean;
+
+    // Productivity
+    todoTasks: TodoItem[];
+    reminders: ReminderItem[];
+
+    // Security
+    passcode: string;
+    passcodeEnabled: boolean;
+}
+
+// Productivity types (ToDoList / Reminder, inspired by BetterDiscord plugins)
+export type TodoPriority = "low" | "medium" | "high";
+
+export interface TodoItem {
+    id: string;
+    text: string;
+    priority: TodoPriority;
+    done: boolean;
+    /** Unix ms deadline, 0 = no deadline */
+    deadline: number;
+    createdAt: number;
+}
+
+export interface ReminderItem {
+    id: string;
+    text: string;
+    /** Unix ms at which the reminder fires */
+    dueAt: number;
+    /** if set, the reminder re-triggers every N minutes */
+    repeatMinutes: number;
+    createdAt: number;
 }
 
 // Quick action types
@@ -128,7 +159,9 @@ export interface ExportData {
         enabledQuickActions: Record<string, boolean>;
         keyboardShortcuts: Shortcut[];
         themeEngine?: ThemeEngineSettings;
-        uiModes?: UiModes;
+        uiModes?: EngineUiModes;
+        todoTasks?: TodoItem[];
+        reminders?: ReminderItem[];
     };
     serverSettings: Record<string, ServerSettings>;
 }

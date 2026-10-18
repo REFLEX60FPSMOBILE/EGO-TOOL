@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Modes contextuels** Focus (masque member list + animations) et Stream (masque données sensibles à l'écran)
 - **Mode Performance** : désactive blur/animations/transitions
 - **Nouvel onglet "Themes & Modes"** dans le panneau de réglages
+- **Modes Gaming (CSS compact + Auto-DND via @api/UserSettings et Flux RUNNING_GAMES_CHANGE, restauré proprement à la fermeture du jeu) et Staff (densité info)**
+- **ToDoList native** (tâches, priorités, deadlines) et **Reminders natifs** (toasts toutes les 30 s, répétition configurable) — inspirés des plugins BetterDiscord de DevEvil99
+- **PasscodeLock** : verrouillage du client par PIN hashé (djb2) avec overlay plein écran et compteur d'échecs — inspiré du PasscodeLock de arg0NNY
+- **Lazy loading** des messages/channels via content-visibility en mode Performance
+- **Onglet "Productivité"** combinant ToDoList, Reminders et PasscodeLock
 
 ### Fixed
 - 97 erreurs TypeScript et bugs runtime réparés : `useEffect` manquant (MessageScanner), `TabStyles` non importé (UserLookup), conflit d'import `ServerSettings` (SettingsPanel), types `UserLookupResult`/`ThreatLevel` manquants, styles `CardStyles.card` / `DiscordColors.muted` / `buttonSecondary` / `ListStyles.title` inexistants (~50 usages), raccourcis clavier absents de l'export, mock data OSINT, `":hover"` invalide en style React, `window.DiscordNative` non déclaré, imports inutilisés
