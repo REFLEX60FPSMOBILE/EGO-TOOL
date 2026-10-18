@@ -54,7 +54,6 @@ import {
     getBadgeLabel, 
     resolveBadgeTarget, 
     setElementHidden,
-    debounce,
     generateId,
     hashPin
 } from "./utils/helpers";
@@ -182,11 +181,19 @@ let commandRegistry: EgoCommandRegistry | null = null;
 // ============================================================================
 
 let currentServerId: string | null = null;
-let observer: MutationObserver | null = null;
-let profileObserver: MutationObserver | null = null;
-let moderationObserver: MutationObserver | null = null;
+let domObserver: MutationObserver | null = null;
+let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 let queue: Set<Element> = new Set();
 let scheduled = false;
+
+// Deferred-work batches — ONE MutationObserver feeds all features through
+// shared timers, instead of four whole-body subtree observers recording the
+// same DOM mutations 4x and running their callbacks on every batch.
+const moderationQueue: Set<HTMLElement> = new Set();
+const profileQueue: Set<HTMLElement> = new Set();
+let moderationTimer: ReturnType<typeof setTimeout> | null = null;
+let profileTimer: ReturnType<typeof setTimeout> | null = null;
+let serverCheckTimer: ReturnType<typeof setTimeout> | null = null;
 
 // ============================================================================
 // DEFAULT VALUES
@@ -406,13 +413,23 @@ function removeReminder(id: string) {
 function checkDueReminders() {
     const now = Date.now();
     const reminders = settings.store.reminders ?? [];
-    let changed = false;
+    if (reminders.length === 0) return;
+    
+    let fired = false;
+    const next: ReminderItem[] = [];
     
     for (const reminder of reminders) {
-        if (reminder.dueAt > now) continue;
+        if (reminder.dueAt > now) {
+            next.push(reminder);
+            continue;
+        }
         
         const overdueBy = now - reminder.dueAt;
-        if (overdueBy > 60000) continue; // fired while the client was closed — leave it alone
+        if (overdueBy > 60000) {
+            // fired while the client was closed — leave it alone
+            next.push(reminder);
+            continue;
+        }
         
         try {
             showToast({ text: `⏰ ${reminder.text}` });
@@ -422,19 +439,17 @@ function checkDueReminders() {
         
         if (reminder.repeatMinutes > 0) {
             // reschedule — dueAt may drift backwards from its miss, forward-correct it
-            let next = reminder.dueAt + reminder.repeatMinutes * 60000;
-            while (next <= now) next += reminder.repeatMinutes * 60000;
-            settings.store.reminders = (settings.store.reminders ?? []).map(r =>
-                r.id === reminder.id ? { ...r, dueAt: next } : r
-            );
+            let nextDue = reminder.dueAt + reminder.repeatMinutes * 60000;
+            while (nextDue <= now) nextDue += reminder.repeatMinutes * 60000;
+            next.push({ ...reminder, dueAt: nextDue });
         } else {
-            settings.store.reminders = (settings.store.reminders ?? []).filter(r => r.id !== reminder.id);
-            changed = true;
+            fired = true;
         }
     }
     
-    if (changed) {
-        settings.store.reminders = settings.store.reminders ?? [];
+    // ONE settings write per tick instead of one per fired reminder
+    if (fired || next.length !== reminders.length) {
+        settings.store.reminders = next;
     }
 }
 
@@ -893,9 +908,7 @@ function toggleModeration() {
     settings.store.moderationEnabled = !enabled;
     
     if (!enabled) {
-        setupModerationObserver();
-    } else {
-        removeModerationObserver();
+        clearModerationQueue(); // moderation just turned off — drop pending work
     }
 }
 
@@ -925,35 +938,51 @@ function resetModerationStats() {
 
 
 
-function setupModerationObserver() {
-    if (moderationObserver) return;
-    
-    moderationObserver = new MutationObserver(debounce((mutations) => {
-        for (const mutation of mutations) {
-            if (mutation.type === "childList") {
-                for (const node of mutation.addedNodes) {
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        checkMessageForModeration(node as HTMLElement);
-                    }
-                }
-            }
-        }
-    }, 500));
-    
-    moderationObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
-}
+const moderationRegexCache = new Map<string, RegExp>();
 
-function removeModerationObserver() {
-    if (moderationObserver) {
-        moderationObserver.disconnect();
-        moderationObserver = null;
+function getModerationRegex(rule: ModerationRule): RegExp | null {
+    const cacheKey = `${rule.id}:${rule.pattern}`;
+    const cached = moderationRegexCache.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+        const regex = new RegExp(rule.pattern, "gi");
+        moderationRegexCache.set(cacheKey, regex);
+        return regex;
+    } catch (e) {
+        moderationLog.warn("invalid regex pattern — rule disabled until it is fixed", rule.pattern, e);
+        return null;
     }
 }
 
+function flushModerationQueue() {
+    moderationTimer = null;
+    const batch = [...moderationQueue];
+    moderationQueue.clear();
+    for (const element of batch) {
+        checkMessageForModeration(element);
+    }
+}
+
+function enqueueModerationCandidate(element: HTMLElement) {
+    if (!(settings.store.moderationEnabled ?? false)) return;
+    moderationQueue.add(element);
+    if (moderationTimer === null) {
+        moderationTimer = setTimeout(flushModerationQueue, 400);
+    }
+}
+
+function clearModerationQueue() {
+    if (moderationTimer !== null) {
+        clearTimeout(moderationTimer);
+        moderationTimer = null;
+    }
+    moderationQueue.clear();
+}
+
 function checkMessageForModeration(element: HTMLElement) {
+    if (!(settings.store.moderationEnabled ?? false)) return;
+
     const rules = settings.store.moderationRules ?? [];
     const enabledRules = rules.filter((r) => r.enabled);
     
@@ -961,17 +990,14 @@ function checkMessageForModeration(element: HTMLElement) {
     
     if (!element.querySelector?.(".message-content, [class*='messageContent']")) return;
     
-    const textContent = element.textContent?.toLowerCase() || "";
+    // bound regex cost on very large nodes (threads, embeds)
+    const textContent = element.textContent?.slice(0, 5000).toLowerCase() || "";
     
     for (const rule of enabledRules) {
-        try {
-            const regex = new RegExp(rule.pattern, "gi");
-            if (regex.test(textContent)) {
-                executeModerationAction(element, rule.action);
-                break;
-            }
-        } catch (e) {
-            moderationLog.warn("invalid regex pattern — rule ignored for this message", rule.pattern, e);
+        const regex = getModerationRegex(rule);
+        if (regex && regex.test(textContent)) {
+            executeModerationAction(element, rule.action);
+            break;
         }
     }
 }
@@ -1048,7 +1074,9 @@ function executeQuickAction(id: string) {
 // ============================================================================
 
 function setupKeyboardShortcuts() {
-    document.addEventListener("keydown", (e) => {
+    if (keydownHandler) return;
+
+    keydownHandler = (e) => {
         const shortcuts = settings.store.keyboardShortcuts ?? DEFAULT_SHORTCUTS;
         
         for (const shortcut of shortcuts) {
@@ -1061,7 +1089,9 @@ function setupKeyboardShortcuts() {
                 executeQuickAction(shortcut.id);
             }
         }
-    });
+    };
+
+    document.addEventListener("keydown", keydownHandler);
 }
 
 // ============================================================================
@@ -1120,76 +1150,74 @@ function importSettings(data: ExportData) {
 // PROFILE OBSERVER
 // ============================================================================
 
-function setupProfileObserver() {
-    if (profileObserver) return;
-    
-    profileObserver = new MutationObserver(debounce((mutations) => {
-        for (const mutation of mutations) {
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    const element = node as HTMLElement;
-                    if (element.querySelector?.(".userProfileModal, [class*='userProfile'], [class*='profileModal']")) {
-                        scanProfileForBadges(element);
-                    }
-                    if (element.querySelector?.(".userPopout, [class*='userPopout'], [class*='profilePopout']")) {
-                        scanProfileForBadges(element);
-                    }
-                }
-            }
-        }
-    }, 300));
-    
-    profileObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
-}
-
-function scanProfileForBadges(element: HTMLElement) {
-    const profileBadges = element.querySelectorAll<HTMLImageElement>(BADGE_SELECTORS.IMG);
-    if (profileBadges.length > 0) {
-        processBadgeImages(profileBadges);
+function scanProfileBadges(element: HTMLElement) {
+    const badges = element.querySelectorAll<HTMLImageElement>(BADGE_SELECTORS.IMG);
+    if (badges.length > 0) {
+        processBadgeImages(badges);
     }
-    
-    const profileObserver = new MutationObserver(debounce(() => {
-        const badges = element.querySelectorAll<HTMLImageElement>(BADGE_SELECTORS.IMG);
-        if (badges.length > 0) {
-            processBadgeImages(badges);
+}
+
+function flushProfileQueue() {
+    profileTimer = null;
+    const batch = [...profileQueue];
+    profileQueue.clear();
+    for (const element of batch) {
+        if (!element.isConnected) continue;
+        if (element.querySelector?.(".userProfileModal, [class*='userProfile'], [class*='profileModal']") 
+            || element.querySelector?.(".userPopout, [class*='userPopout'], [class*='profilePopout']")) {
+            scanProfileBadges(element);
         }
-    }, 200));
-    
-    profileObserver.observe(element, {
-        childList: true,
-        subtree: true,
-    });
-    
-    setTimeout(() => {
-        profileObserver.disconnect();
-    }, 10000);
+    }
+}
+
+function enqueueProfileCandidate(element: HTMLElement) {
+    profileQueue.add(element);
+    if (profileTimer === null) {
+        profileTimer = setTimeout(flushProfileQueue, 300);
+    }
+}
+
+function flushServerCheck() {
+    serverCheckTimer = null;
+    updateCurrentServer();
 }
 
 // ============================================================================
-// BADGE OBSERVER
+// UNIFIED DOM OBSERVER
+// One observer (badge queue + profile scan + moderation + server tracking)
+// instead of four whole-body subtree observers — Discord re-renders DOM
+// constantly, so every extra listener on document.body multiplies the cost.
 // ============================================================================
 
-function setupBadgeObserver() {
-    if (observer) return;
+function setupObservers() {
+    if (domObserver) return;
     
-    observer = new MutationObserver((mutations) => {
+    domObserver = new MutationObserver((mutations) => {
+        let serverDirty = false;
+        
         for (const mutation of mutations) {
             if (mutation.type === "attributes") {
                 enqueueForBadgeProcessing(mutation.target as Element);
-            } else {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        enqueueForBadgeProcessing(node as Element);
-                    }
-                });
+                continue;
+            }
+            
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const element = node as HTMLElement;
+                    enqueueForBadgeProcessing(element);
+                    serverDirty = true;
+                    enqueueProfileCandidate(element);
+                    enqueueModerationCandidate(element);
+                }
             }
         }
+        
+        if (serverDirty && serverCheckTimer === null) {
+            serverCheckTimer = setTimeout(flushServerCheck, 150);
+        }
     });
-    
-    observer.observe(document.body, {
+
+    domObserver.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
@@ -1197,21 +1225,29 @@ function setupBadgeObserver() {
     });
 }
 
-// ============================================================================
-// SERVER OBSERVER
-// ============================================================================
-
-function setupServerObserver() {
-    const serverObserver = new MutationObserver(debounce(() => {
-        updateCurrentServer();
-    }, 100));
+function removeObservers() {
+    if (domObserver) {
+        domObserver.disconnect();
+        domObserver = null;
+    }
     
-    serverObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
+    if (keydownHandler) {
+        document.removeEventListener("keydown", keydownHandler);
+        keydownHandler = null;
+    }
     
-    return serverObserver;
+    clearModerationQueue();
+    
+    if (profileTimer !== null) {
+        clearTimeout(profileTimer);
+        profileTimer = null;
+    }
+    profileQueue.clear();
+    
+    if (serverCheckTimer !== null) {
+        clearTimeout(serverCheckTimer);
+        serverCheckTimer = null;
+    }
 }
 
 // ============================================================================
@@ -1293,18 +1329,11 @@ export default definePlugin({
         // Apply UI settings
         applyUISettings();
         
-        // Setup observers
-        setupBadgeObserver();
-        setupProfileObserver();
-        setupServerObserver();
+        // ONE unified observer: badges + profile + moderation + server tracking
+        setupObservers();
         
         // Setup keyboard shortcuts
         setupKeyboardShortcuts();
-        
-        // Setup moderation observer if enabled
-        if (settings.store.moderationEnabled) {
-            setupModerationObserver();
-        }
         
         // Gaming auto-DND, reminders and passcode lock
         setupDndAutomation();
@@ -1314,21 +1343,8 @@ export default definePlugin({
     
     // Plugin stop
     stop() {
-        // Disconnect observers
-        if (observer) {
-            observer.disconnect();
-            observer = null;
-        }
-        
-        if (profileObserver) {
-            profileObserver.disconnect();
-            profileObserver = null;
-        }
-        
-        if (moderationObserver) {
-            moderationObserver.disconnect();
-            moderationObserver = null;
-        }
+        // Disconnect the unified observer + keyboard handler + pending timers
+        removeObservers();
         
         // Teardown productivity + security + gaming
         commandRegistry?.stop();
