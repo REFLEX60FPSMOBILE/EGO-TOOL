@@ -47,7 +47,7 @@ import {
     MODERATION_ACTIONS 
 } from "./utils/constants";
 
-import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine, getDefaultUiModes, getPresetById } from "./utils/themeEngine";
+import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine, getDefaultUiModes, getPresetById, BODY_CLASSES } from "./utils/themeEngine";
 
 import { 
     generateBadgeKey, 
@@ -330,7 +330,40 @@ function registerEgoCommands() {
             settings.store.verboseLogs = value;
             return value;
         },
+        getHealth: egoHealthReport,
+        onFix: egoFix,
     });
+}
+
+// ---------------------------------------------------------------------------
+// RUNTIME DIAGNOSTICS — /ego status health line + /ego fix re-apply
+// ---------------------------------------------------------------------------
+
+function egoHealthReport(): string {
+    const engineStyle = !!document.getElementById("ego-theme-engine");
+    const themeStyle = !!document.getElementById("vc-ego-tool-theme");
+    const activeModeClasses = Object.values(BODY_CLASSES)
+        .filter(cls => document.body.classList.contains(cls));
+
+    const parts = [
+        engineStyle ? "thème injecté" : "⚠️ thème absent",
+        themeStyle ? "styles UI OK" : "styles UI off",
+        activeModeClasses.length ? `modes DOM : ${activeModeClasses.join(", ")}` : "modes DOM : aucun",
+    ];
+    return parts.join(" · ");
+}
+
+function egoFix(): string {
+    // re-apply every DOM-side module — idempotent on purpose (safe after hot
+    // reloads or a lost patch cycle)
+    applyThemeEngine();
+    applyUISettings();
+    scanAllBadges();
+    setupObservers();
+    setupKeyboardShortcuts();
+    setupDndAutomation();
+    setupReminderTicker();
+    return `🔁 Modules ré-appliqués — ${egoHealthReport()}`;
 }
 
 function setupDndAutomation() {

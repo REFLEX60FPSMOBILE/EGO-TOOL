@@ -23,6 +23,10 @@ export interface EgoCommandHandlers {
     getBadgeCatalogSize(): number;
     isVerboseEnabled(): boolean;
     onToggleVerbose(value: boolean): boolean;
+    /** one-line health summary of the plugin's DOM-side modules */
+    getHealth(): string;
+    /** force re-apply all DOM-side modules (theme, modes, badges, observers) */
+    onFix(): string;
 }
 
 export interface EgoCommandRegistry {
@@ -79,6 +83,8 @@ export function setupEgoCommands(handlers: EgoCommandHandlers): EgoCommandRegist
                 `🧩 modes actifs : ${active.length ? active.join(", ") : "aucun"}`,
                 `🚫 Auto-DND : ${handlers.getGamingAutoDnd() ? "ON" : "off"}  ·  🛡️ modération : ${handlers.getModerationEnabled() ? "ON" : "off"}`,
                 `✅ todos : ${pendingTodos} en cours  ·  ⏰ reminders : ${handlers.getReminders().length}  ·  🏅 badges catalogués : ${handlers.getBadgeCatalogSize()}`,
+                `🧪 modules : ${handlers.getHealth()}`,
+                `💡 modules silencieux ? teste /ego-fix (ré-applique tout), puis redémarre Discord`,
                 `📝 logs verbeux : ${handlers.isVerboseEnabled() ? "ON" : "off"}`,
             ].join("\n");
             log.debug("/ego-status executed");
@@ -167,7 +173,20 @@ export function setupEgoCommands(handlers: EgoCommandHandlers): EgoCommandRegist
         },
     });
 
-    log.info("/ego commands registered (status, mode, remind, stats, debug)");
+    // ---------------------------------------------------------------- /ego fix
+    register({
+        name: "ego-fix",
+        description: "EGO TOOL — ré-appliquer tous les modules (thème, modes, badges, observers)",
+        options: [],
+        execute: (args?: unknown[]) => {
+            void args;
+            const result = handlers.onFix();
+            log.debug("/ego-fix executed");
+            return { content: result };
+        },
+    });
+
+    log.info("/ego commands registered (status, mode, remind, stats, debug, fix)");
 
     return {
         stop(): void {
