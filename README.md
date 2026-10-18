@@ -60,13 +60,20 @@ chmod +x inject.sh
 powershell -ExecutionPolicy Bypass -File inject.ps1 -VencordDir "C:\path\to\Vencord"  # Windows
 ```
 
+**Optional — Orion (auto quest completer):** add `--orion` to install the OrionQuests userplugin alongside EGO TOOL:
+```bash
+./inject.sh --orion                                                      # Linux / macOS
+./inject.bat --orion                                                     # Windows (double-click wrapper)
+powershell -ExecutionPolicy Bypass -File inject.ps1 -Orion               # Windows (PowerShell)
+```
+
 ### Manual injection
 
 1. Make sure you have **Vencord installed from source** ([guide](https://docs.vencord.dev/installing/)).
 2. Clone the plugin inside the userplugins folder:
    ```bash
    cd path/to/Vencord/src/userplugins   # create the folder if needed
-   git clone https://github.com/REFLEX60FPSMOBILE/vencord-hidebadges EGO-Tool
+   git clone https://github.com/REFLEX60FPSMOBILE/EGO-TOOL EGO-Tool
    ```
 3. Rebuild Vencord:
    ```bash
@@ -81,6 +88,68 @@ powershell -ExecutionPolicy Bypass -File inject.ps1 -VencordDir "C:\path\to\Venc
 ./inject.sh --remove                                        # Linux / macOS
 powershell -ExecutionPolicy Bypass -File inject.ps1 -Remove  # Windows
 ```
+Use `--remove --orion` (or `-Remove -Orion`) to also uninstall OrionQuests.
+
+## ✅ Recommended companion plugins (included with Vencord)
+
+All of the plugins below are **built into Vencord** — no extra install needed.
+After injecting EGO TOOL, open **Settings → Vencord → Plugins** and tick the ones you want.
+
+### Serveurs, staff & organisation
+
+| Plugin | What it does | Why it helps | Risk / drawback |
+| --- | --- | --- | --- |
+| **PinDMs** | Pin & reorder DMs at the top of the list | Essential if you handle lots of DMs, staff, partners, bots | No notable risk |
+| **BetterFolders** | Improves server folders: dedicated sidebar, icons, controlled opening | Great for organizing several community servers | Can heavily change the sidebar; disable if a theme breaks |
+| **MemberCount** | Shows online / total / voice users | Excellent for monitoring a server without opening stats | Slight visual cost in the member list |
+| **ServerInfo** | Shows information about a server | Handy for quick server inspection | Barely useful if you don't admin |
+| **PermissionsViewer** | Shows permissions of a user, role or channel | Very useful for staff/moderation or role debugging | May expose things you don't need to see |
+| **ViewRaw** | Copy/show the raw content of a message, channel or server | Must-have for debugging IDs, embeds, payloads | Never share a raw containing tokens or sensitive data |
+
+### Messages & quality of life
+
+| Plugin | What it does | Why it helps | Risk / drawback |
+| --- | --- | --- | --- |
+| **MessageLogger** | Temporarily logs deleted/edited messages locally | Great for settling a dispute or understanding a deletion | Not a server-log replacement; never use it to harass or expose someone |
+| **NoReplyMention** | Disables the auto-mention when replying | Avoids pointless pings | May miss important replies if misconfigured |
+| **QuickMention** | Adds a quick-mention button on messages | Huge time saver for staff/moderation | No notable risk |
+| **MessageClickActions** | Shortcuts: double-click to edit/reply, hold + click to delete | Makes chat navigation much faster | Accidental actions possible at first |
+| **CharacterCounter** | Shows character count in the message box | Useful for long messages, announcements, tickets | No notable risk |
+| **Translate** | Translates messages via Google Translate, DeepL or Kagi | Perfect for an international community | Sends text to the chosen translation service: avoid for sensitive content |
+| **ClearURLs** | Strips tracking parameters from sent links | Better privacy and cleaner links | Can break a link that needs its parameters |
+| **AnonymiseFileNames** | Anonymises uploaded file names | Avoids leaking your username, path, project or visible metadata | You lose the readable file name |
+
+### Voice, stream & media
+
+| Plugin | What it does | Why it helps | Risk / drawback |
+| --- | --- | --- | --- |
+| **CallTimer** | Adds a timer to voice calls | Handy for staff meetings, sessions, events | No notable risk |
+| **VoiceMessages** | Sends voice messages like on mobile | Very handy in DMs or staff chat | Desktop voice-sending feature by Vencord |
+| **BiggerStreamPreview** | Enlarges stream previews | Better visibility during an event or screen share | Can take too much space on small screens |
+| **PictureInPicture** | Adds picture-in-picture for videos | Watch a video while chatting | Can use more resources |
+| **WebScreenShareFixes** | Fixes bitrate limits & CPU issues in screen share on Chromium/Vesktop | Great for clean streaming | Mostly relevant on Vesktop/Web, not native Discord Desktop |
+| **VolumeBooster** | Lets you exceed max volume per user/stream | Useful for quiet streams/voices | Protect your ears; watch audio saturation |
+| **SpotifyControls** | Adds a Spotify controller above the account panel | Quick control without switching apps | Depends on Spotify integration; can break after updates |
+
+### Visual, privacy & security
+
+| Plugin | What it does | Why it helps | Risk / drawback |
+| --- | --- | --- | --- |
+| **NoTrack** | Disables Discord analytics, metrics & crash reporting | Better privacy | May complicate official Discord support if you hit a bug |
+| **BetterSessions** | Improves the sessions menu: timestamps, custom names, new-session alerts | Great account security: you spot suspicious logins fast | Enable it, and check the alerts regularly |
+| **BlurNSFW** | Blurs NSFW attachments until hover | Avoids nasty surprises in public or on stream | No notable risk |
+| **RoleColorEverywhere** | Applies role color everywhere possible | Cleaner and more personalized UI | May conflict with some themes |
+
+> ⚠️ **Reminder:** using Vencord (and any client mod) is against Discord's Terms of Service. Use at your own risk.
+
+## 🧩 Optional: Orion (OrionQuests)
+
+**[Orion](https://github.com/nyxxbit/discord-quest-completer)** is a third-party userplugin (not bundled with Vencord) that completes Discord Quests automatically — all five quest types, including `ACHIEVEMENT_IN_ACTIVITY`.
+
+- **Install:** run the injector with `--orion` (see [Installation](#-installation)), or clone `https://github.com/nyxxbit/discord-quest-completer` into `src/userplugins/` yourself.
+- **Use:** restart Discord, then type `/orion status` in any channel; `/orion start` begins the cycle. Settings live in **Settings → Vencord → UserPlugins → OrionQuests**.
+- **Desktop only** — Discord's internal stores don't exist on web/mobile.
+- ⚠️ **Read the project's warning before enabling it:** Discord has been enforcing against quest automation since April 2026 (quest restrictions up to ~14 days and named `Account Standing` violations have been reported). The achievement bypass runs a real OAuth2 authorization with your account — if you can't afford to lose it, don't run this on it. **You use it entirely at your own risk; Orion is not part of EGO TOOL and is not endorsed by its author.**
 
 ## 🏛️ Join Our Discord
 

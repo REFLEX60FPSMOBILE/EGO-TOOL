@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Recommended companion plugins guide in README (25 built-in Vencord plugins: PinDMs, BetterFolders, MemberCount, ServerInfo, PermissionsViewer, ViewRaw, MessageLogger, NoReplyMention, QuickMention, MessageClickActions, CharacterCounter, Translate, ClearURLs, AnonymiseFileNames, CallTimer, VoiceMessages, BiggerStreamPreview, PictureInPicture, WebScreenShareFixes, VolumeBooster, SpotifyControls, NoTrack, BetterSessions, BlurNSFW, RoleColorEverywhere) with use cases and risks
+- Optional `--orion` (`-Orion`) and `--remove-orion` (`-RemoveOrion`) flags on inject.sh / inject.ps1 / inject.bat to install and uninstall the OrionQuests userplugin alongside EGO TOOL
+
 ### Planned
 - Full OSINT module (User Lookup, Server Analysis, Message Scanner)
 - Advanced UI customization (glassmorphism, dynamic themes)
 - Moderation tools (regex filters, automated actions)
+
+### Changed
+- Injector repo URL updated to the current EGO-TOOL repository
 
 ## [1.0.0] - 2026-10-09
 

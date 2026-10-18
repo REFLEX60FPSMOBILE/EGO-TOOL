@@ -7,12 +7,14 @@
 # Nothing is reinstalled, no plugins or settings are removed.
 #
 # Usage:
-#   ./inject.sh [--vencord-dir /path/to/Vencord] [--no-build] [--remove]
+#   ./inject.sh [--vencord-dir /path/to/Vencord] [--no-build] [--remove] [--orion] [--remove-orion]
 #
 set -euo pipefail
 
-REPO_URL="https://github.com/REFLEX60FPSMOBILE/vencord-hidebadges.git"
+EGO_REPO_URL="https://github.com/REFLEX60FPSMOBILE/EGO-TOOL.git"
+ORION_REPO_URL="https://github.com/nyxxbit/discord-quest-completer.git"
 PLUGIN_NAME="EGO-Tool"
+ORION_PLUGIN_NAME="discord-quest-completer"
 VENCORD_DIR="${VENCORD_DIR:-}"
 NO_BUILD="false"
 ACTION="inject"
@@ -27,8 +29,10 @@ while [[ $# -gt 0 ]]; do
     --vencord-dir) VENCORD_DIR="$2"; shift 2 ;;
     --no-build) NO_BUILD="true"; shift ;;
     --remove|-r) ACTION="remove"; shift ;;
+    --orion) ACTION="orion"; shift ;;
+    --remove-orion) ACTION="remove-orion"; shift ;;
     --help|-h)
-      echo "Usage: ./inject.sh [--vencord-dir /path/to/Vencord] [--no-build] [--remove]"; exit 0 ;;
+      echo "Usage: ./inject.sh [--vencord-dir /path/to/Vencord] [--no-build] [--remove] [--orion] [--remove-orion]"; exit 0 ;;
     *) fail "Unknown option: $1" ;;
   esac
 done
@@ -55,14 +59,30 @@ info "Vencord source found: $VENCORD_DIR"
 
 USERPLUGINS_DIR="$VENCORD_DIR/src/userplugins"
 PLUGIN_DIR="$USERPLUGINS_DIR/$PLUGIN_NAME"
+ORION_PLUGIN_DIR="$USERPLUGINS_DIR/$ORION_PLUGIN_NAME"
 
 # ----------------------------------------------------------------
-# 2. Remove mode
+# 2. Remove modes
 # ----------------------------------------------------------------
+if [[ "$ACTION" == "remove-orion" ]]; then
+  [[ -d "$ORION_PLUGIN_DIR" ]] || fail "Orion (OrionQuests) is not present in $USERPLUGINS_DIR"
+  info "Removing OrionQuests from userplugins..."
+  rm -rf "$ORION_PLUGIN_DIR"
+  if [[ "$NO_BUILD" != "true" ]]; then
+    info "Rebuilding Vencord (pnpm build)..."
+    (cd "$VENCORD_DIR" && pnpm build) || fail "pnpm build failed."
+  fi
+  ok "OrionQuests removed. Everything else is untouched."
+  exit 0
+fi
+
 if [[ "$ACTION" == "remove" ]]; then
   [[ -d "$PLUGIN_DIR" ]] || fail "EGO TOOL is not present in $USERPLUGINS_DIR"
   info "Removing EGO TOOL from userplugins..."
   rm -rf "$PLUGIN_DIR"
+  if [[ -d "$ORION_PLUGIN_DIR" ]]; then
+    info "OrionQuests detected (-$ORION_PLUGIN_NAME): nothing touched, remove it with ./inject.sh --remove-orion"
+  fi
   if [[ "$NO_BUILD" != "true" ]]; then
     info "Rebuilding Vencord (pnpm build)..."
     (cd "$VENCORD_DIR" && pnpm build) || fail "pnpm build failed."
@@ -72,20 +92,39 @@ if [[ "$ACTION" == "remove" ]]; then
 fi
 
 # ----------------------------------------------------------------
-# 3. Inject the plugin into the userplugins folder
+# 3. Inject the plugin(s) into the userplugins folder
 # ----------------------------------------------------------------
 mkdir -p "$USERPLUGINS_DIR"
-if [[ -d "$PLUGIN_DIR/.git" ]]; then
-  info "EGO TOOL already injected - updating to latest version..."
-  git -C "$PLUGIN_DIR" pull --ff-only
-else
-  rm -rf "$PLUGIN_DIR"
-  info "Injecting EGO TOOL into $PLUGIN_DIR..."
-  git clone --depth 1 "$REPO_URL" "$PLUGIN_DIR"
+
+if [[ "$ACTION" == "inject" ]]; then
+  if [[ -d "$PLUGIN_DIR/.git" ]]; then
+    info "EGO TOOL already injected - updating to latest version..."
+    git -C "$PLUGIN_DIR" pull --ff-only
+  else
+    rm -rf "$PLUGIN_DIR"
+    info "Injecting EGO TOOL into $PLUGIN_DIR..."
+    git clone --depth 1 "$EGO_REPO_URL" "$PLUGIN_DIR"
+  fi
+fi
+
+if [[ "$ACTION" == "orion" ]]; then
+  printf "${RED}"
+  info "WARNING: Orion automates Discord Quests. Discord is enforcing against quest"
+  info "automation: quest restrictions and Account Standing violations have been reported."
+  printf "${RESET}"
+  info "Use it on your account entirely at your own risk."
+  if [[ -d "$ORION_PLUGIN_DIR/.git" ]]; then
+    info "OrionQuests already injected - updating to latest version..."
+    git -C "$ORION_PLUGIN_DIR" pull --ff-only
+  else
+    rm -rf "$ORION_PLUGIN_DIR"
+    info "Injecting OrionQuests into $ORION_PLUGIN_DIR..."
+    git clone --depth 1 "$ORION_REPO_URL" "$ORION_PLUGIN_DIR"
+  fi
 fi
 
 if [[ "$NO_BUILD" == "true" ]]; then
-  ok "EGO TOOL injected into the userplugins folder (build skipped)."
+  ok "Finished injecting into the userplugins folder (build skipped)."
   echo "   Run: cd $VENCORD_DIR && pnpm build   to apply it to the client."
   exit 0
 fi
@@ -98,15 +137,20 @@ command -v pnpm >/dev/null 2>&1 || fail "pnpm is not installed. Install it with:
 cd "$VENCORD_DIR"
 [[ -d node_modules ]] || { info "Installing Vencord dependencies (pnpm i)..."; pnpm i; }
 info "Injecting into client bundle (pnpm build)..."
-pnpm build || fail "Build failed - EGO TOOL was placed in userplugins but the client was NOT patched. Fix the error above and re-run."
+pnpm build || fail "Build failed - the plugin(s) were placed in userplugins but the client was NOT patched. Fix the error above and re-run."
 
 echo ""
-ok "EGO TOOL injected successfully!"
+ok "Injection successful!"
 echo ""
 echo "  Next steps:"
 echo "    1. Fully restart Discord (or Vesktop)."
 echo "    2. Open User Settings -> Vencord -> Plugins."
+if [[ "$ACTION" == "orion" ]]; then
+printf "    3. Enable ${CYAN}OrionQuests${RESET} and type /orion status in any channel.\n"
+else
 printf "    3. Enable ${CYAN}EGO TOOL${RESET}.\n"
+fi
 echo ""
-echo "  Remove anytime with: ./inject.sh --remove"
+echo "  Remove EGO TOOL anytime with: ./inject.sh --remove"
+echo "  Remove OrionQuests anytime with: ./inject.sh --remove-orion"
 echo ""
