@@ -41,6 +41,7 @@ It bundles an educational OSINT module, deep UI customization, and powerful mode
 | 🛡️ **Moderation** | Regex-based filter rules, automated actions, moderation stats |
 | 🏅 **Badge Manager** | Visual badge catalog, per-badge or hide-all control, per-server overrides |
 | ⌨️ **Productivity** | Global keyboard shortcuts, quick actions, per-server settings, export/import configs |
+| 💬 **Commandes slash** | `/ego-status` · `/ego mode` · `/ego remind` · `/ego stats` · `/ego debug` — tout le plugin pilotable depuis n'importe quel salon |
 
 ## ⚡ Installation
 

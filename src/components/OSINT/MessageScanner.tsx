@@ -2,9 +2,7 @@ import { React, useState, useCallback, useMemo, useEffect } from "@webpack/commo
 import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
 import { DiscordColors } from "../../styles";
 import { 
-    ExtractedLink, 
-    ExtractedEmail, 
-    ExtractedPhone,
+    ExtractedLink,
     DiscordMessage,
     RiskLevel,
     RISK_LEVELS
@@ -13,9 +11,7 @@ import {
     extractLinks, 
     extractEmails, 
     extractPhones,
-    extractDiscordInvites,
-    isSafeUrl,
-    formatNumber
+    extractDiscordInvites
 } from "../../utils/osintHelpers";
 
 // Mock data for demonstration

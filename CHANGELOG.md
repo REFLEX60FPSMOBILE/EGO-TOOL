@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PasscodeLock** : verrouillage du client par PIN hashé (djb2) avec overlay plein écran et compteur d'échecs — inspiré du PasscodeLock de arg0NNY
 - **Lazy loading** des messages/channels via content-visibility en mode Performance
 - **Onglet "Productivité"** combinant ToDoList, Reminders et PasscodeLock
+- **Système de commandes** `/ego-status`, `/ego mode`, `/ego remind`, `/ego stats`, `/ego debug` (via @api/Commands, désenregistrées à l'arrêt du plugin)
+- **Logger structuré** (`src/utils/logger.ts`) : préfixe coloré par module (main/autodnd/reminders/moderation/server), debug gated par le nouveau réglage **Verbose Logs** (ou `/ego debug on|off`)
+- **Base stabilisée** : ESLint 0 erreur (71 corrigés — imports inutilisés, impuretés Date.now en rendu, regex escapes, apostrophes JSX, narrowing optionnel) et typecheck strict 0 erreur
 
 ### Fixed
 - 97 erreurs TypeScript et bugs runtime réparés : `useEffect` manquant (MessageScanner), `TabStyles` non importé (UserLookup), conflit d'import `ServerSettings` (SettingsPanel), types `UserLookupResult`/`ThreatLevel` manquants, styles `CardStyles.card` / `DiscordColors.muted` / `buttonSecondary` / `ListStyles.title` inexistants (~50 usages), raccourcis clavier absents de l'export, mock data OSINT, `":hover"` invalide en style React, `window.DiscordNative` non déclaré, imports inutilisés

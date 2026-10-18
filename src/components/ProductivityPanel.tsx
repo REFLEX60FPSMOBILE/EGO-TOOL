@@ -41,6 +41,8 @@ const ProductivityPanel: React.FC<ProductivityPanelProps> = ({
     const [reminderText, setReminderText] = useState("");
     const [reminderMinutes, setReminderMinutes] = useState("15");
     const [passcodeInput, setPasscodeInput] = useState("");
+    // captured once per mount — avoids impure Date.now() calls inside render
+    const [nowTs] = useState(() => Date.now());
 
     const handleAddTodo = useCallback(() => {
         const text = todoText.trim();
@@ -120,7 +122,7 @@ const ProductivityPanel: React.FC<ProductivityPanelProps> = ({
                     <div style={ListStyles.items}>
                         {[...pending, ...done].map((task) => {
                             const prio = PRIORITY_LABELS[task.priority];
-                            const overdue = task.deadline > 0 && task.deadline < Date.now() && !task.done;
+                            const overdue = task.deadline > 0 && task.deadline < nowTs && !task.done;
                             return (
                                 <div
                                     key={task.id}

@@ -5,11 +5,8 @@ import { DiscordUser, UserBadge, RiskLevel, RISK_LEVELS } from "../../types/osin
 import { 
     formatDate, 
     getAccountAge, 
-    hasNitro, 
-    hasEarlySupporter, 
     isVerified, 
-    generateUserSummary,
-    calculateUserThreatScore
+    generateUserSummary
 } from "../../utils/osintHelpers";
 
 interface UserLookupProps {
@@ -412,7 +409,6 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                             </h5>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                                 {threatFactors.slice(0, 5).map((factor, index) => {
-                                    const level = RISK_LEVELS[factor.severity];
                                     return (
                                         <span
                                             key={index}
@@ -773,7 +769,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                             Linked social media and external accounts
                         </p>
                         
-                        {!!selectedUser.associatedAccounts?.length ? (
+                        {selectedUser.associatedAccounts && selectedUser.associatedAccounts.length > 0 ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                                 {selectedUser.associatedAccounts.map((account, index) => (
                                     <div
@@ -801,7 +797,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                                         {account.verified && (
                                             <span style={{ color: DiscordColors.success, fontSize: "16px" }}>✓</span>
                                         )}
-                                        <a href={account.url} target="_blank" style={{ color: DiscordColors.link, fontSize: "14px" }}>
+                                        <a href={account.url} target="_blank" rel="noreferrer" style={{ color: DiscordColors.link, fontSize: "14px" }}>
                                             Link
                                         </a>
                                     </div>
@@ -822,7 +818,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                     <div style={CardStyles.card}>
                         <h4 style={CardStyles.cardTitle}>Username History</h4>
                         
-                        {!!selectedUser.previousUsernames?.length ? (
+                        {selectedUser.previousUsernames && selectedUser.previousUsernames.length > 0 ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                                 {selectedUser.previousUsernames.map((username, index) => (
                                     <div
@@ -962,7 +958,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                                         </div>
                                         <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px", background: "rgba(250, 166, 26, 0.1)", borderRadius: "4px" }}>
                                             <span style={{ color: DiscordColors.warning, fontSize: "16px" }}>💀</span>
-                                            <span style={{ fontSize: "13px" }}>Verify the user's identity before trusting them.</span>
+                                            <span style={{ fontSize: "13px" }}>                                            Verify the user’s identity before trusting them.</span>
                                         </div>
                                     </>
                                 )}

@@ -104,6 +104,9 @@ export interface PluginSettings {
     // Security
     passcode: string;
     passcodeEnabled: boolean;
+
+    // Logging
+    verboseLogs: boolean;
 }
 
 // Productivity types (ToDoList / Reminder, inspired by BetterDiscord plugins)

@@ -1,5 +1,5 @@
 import { React, useState, useCallback, useMemo } from "@webpack/common";
-import { CardStyles, ButtonStyles, TabStyles } from "../styles";
+import { TabStyles } from "../styles";
 import { DiscordColors } from "../styles";
 import ProfilePreview from "./ProfilePreview";
 import BadgeSelection from "./BadgeSelection";

@@ -293,7 +293,7 @@ const ServerSettings: React.FC<ServerSettingsProps> = ({
                     <li>Add the server using the form above</li>
                     <li>Configure badge hiding for that server</li>
                     <li>Settings automatically apply when you switch servers</li>
-                    <li>Use "Current Server" section for quick access to current server</li>
+                    <li>Use “Current Server” section for quick access to current server</li>
                 </ol>
             </div>
         </div>

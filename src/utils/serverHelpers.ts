@@ -2,6 +2,9 @@
 
 import { BADGE_SELECTORS, CUSTOM_ATTRS } from "./constants";
 import { generateBadgeKey, resolveBadgeTarget, setElementHidden } from "./helpers";
+import { createLogger } from "./logger";
+
+const log = createLogger("server");
 
 declare global {
     interface Window {
@@ -41,7 +44,7 @@ export function getCurrentServerId(): string | null {
         
         return null;
     } catch (e) {
-        console.log("Unable to get server ID", e);
+        log.debug("unable to get server ID", e);
         return null;
     }
 }

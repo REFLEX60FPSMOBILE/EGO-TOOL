@@ -54,7 +54,7 @@ const UICustomizationPanel: React.FC<UICustomizationProps> = ({ settings, onUpda
                 <div>
                     <h3 style={CardStyles.title}>🎨 UI Customization</h3>
                     <p style={CardStyles.description}>
-                        Customize Discord's appearance with themes, toggles, and custom CSS
+                        Customize Discord’s appearance with themes, toggles, and custom CSS
                     </p>
                 </div>
             </div>
@@ -331,7 +331,7 @@ const UICustomizationPanel: React.FC<UICustomizationProps> = ({ settings, onUpda
                     color: DiscordColors.textMuted,
                     margin: "0 0 12px 0",
                 }}>
-                    Add custom CSS to modify Discord's appearance. Use F12 to inspect elements.
+                    Add custom CSS to modify Discord’s appearance. Use F12 to inspect elements.
                 </p>
                 <textarea
                     value={settings.customCSS}

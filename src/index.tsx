@@ -48,7 +48,7 @@ import {
     MODERATION_ACTIONS 
 } from "./utils/constants";
 
-import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine, getDefaultUiModes } from "./utils/themeEngine";
+import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine, getDefaultUiModes, getPresetById } from "./utils/themeEngine";
 
 import { 
     generateBadgeKey, 
@@ -61,9 +61,16 @@ import {
 } from "./utils/helpers";
 
 import { getCurrentServerId } from "./utils/serverHelpers";
+import { createLogger, setVerboseLogs, getVerboseLogs } from "./utils/logger";
+import { setupEgoCommands, type EgoCommandRegistry } from "./commands";
 
 // Import components
 import SettingsPanel from "./components/SettingsPanel";
+
+const log = createLogger("main");
+const dndLog = createLogger("autodnd");
+const remindersLog = createLogger("reminders");
+const moderationLog = createLogger("moderation");
 
 // ============================================================================
 // SETTINGS DEFINITION
@@ -76,6 +83,12 @@ const settings = definePluginSettings({
         description: "Hide ALL badges (ignores the list below)",
         default: false,
         onChange: () => applyAllBadgeSettings(),
+    },
+    verboseLogs: {
+        type: OptionType.BOOLEAN,
+        description: "Verbose logs (debug output in the console)",
+        default: false,
+        onChange: (value) => setVerboseLogs(!!value),
     },
     badgeManager: {
         type: OptionType.COMPONENT,
@@ -155,7 +168,15 @@ const settings = definePluginSettings({
     reminders: ReminderItem[];
     passcode: string;
     passcodeEnabled: boolean;
+    verboseLogs: boolean;
 }>();
+
+// ============================================================================
+// GLOBAL VARIABLES
+// ============================================================================
+
+let startedAt = 0;
+let commandRegistry: EgoCommandRegistry | null = null;
 
 // ============================================================================
 // GLOBAL VARIABLES
@@ -166,7 +187,7 @@ let observer: MutationObserver | null = null;
 let profileObserver: MutationObserver | null = null;
 let moderationObserver: MutationObserver | null = null;
 let queue: Set<Element> = new Set();
-let scheduled: boolean = false;
+let scheduled = false;
 
 // ============================================================================
 // DEFAULT VALUES
@@ -236,7 +257,7 @@ function ensureDndModule() {
     try {
         dndStatusModule = getUserSettingLazy("status", "status");
     } catch (e) {
-        console.log("EGO TOOL: unable to load the user status setting module", e);
+        dndLog.warn("unable to load the user status setting module", e);
         dndStatusModule = null;
     }
     return dndStatusModule;
@@ -267,6 +288,45 @@ function handleRunningGamesChange(payload: unknown): void {
     }
 }
 
+function registerEgoCommands() {
+    if (commandRegistry) return;
+    commandRegistry = setupEgoCommands({
+        log,
+        getUptimeMs: () => (startedAt ? Date.now() - startedAt : 0),
+        getStartedAt: () => startedAt,
+        getPresetName: () => getPresetById(settings.store.themeEngine?.preset ?? "dark").name,
+        getModes: () => settings.store.uiModes ?? getDefaultUiModes(),
+        getGamingAutoDnd: () => settings.store.gamingAutoDnd ?? false,
+        onToggleMode: (mode) => {
+            const current = settings.store.uiModes ?? getDefaultUiModes();
+            const value = !current[mode as keyof UiModes];
+            updateUiModes({ [mode]: value } as Partial<UiModes>);
+            return value;
+        },
+        onToggleGamingAutoDnd: () => {
+            const value = !(settings.store.gamingAutoDnd ?? false);
+            settings.store.gamingAutoDnd = value;
+            setupDndAutomation();
+            log.info("Auto-DND toggled", value ? "ON" : "off");
+            return value;
+        },
+        onAddReminder: (text, minutes) => {
+            addReminder(text, Date.now() + minutes * 60000, 0);
+        },
+        getModerationEnabled: () => settings.store.moderationEnabled ?? false,
+        getModerationStats: () => settings.store.moderationStats ?? getDefaultModerationStats(),
+        getTodoTasks: () => settings.store.todoTasks ?? [],
+        getReminders: () => settings.store.reminders ?? [],
+        getBadgeCatalogSize: () => Object.keys(settings.store.badgeCatalog ?? {}).length,
+        isVerboseEnabled: () => getVerboseLogs(),
+        onToggleVerbose: (value) => {
+            setVerboseLogs(value);
+            settings.store.verboseLogs = value;
+            return value;
+        },
+    });
+}
+
 function setupDndAutomation() {
     if (!(settings.store.gamingAutoDnd ?? false)) return removeDndAutomation();
     if (onRunningGamesChange) return;
@@ -274,7 +334,7 @@ function setupDndAutomation() {
     try {
         FluxDispatcher.subscribe("RUNNING_GAMES_CHANGE", onRunningGamesChange);
     } catch (e) {
-        console.log("EGO TOOL: RUNNING_GAMES_CHANGE unavailable", e);
+        dndLog.warn("RUNNING_GAMES_CHANGE unavailable", e);
         onRunningGamesChange = null;
     }
 }
@@ -346,7 +406,7 @@ function removeReminder(id: string) {
 
 function checkDueReminders() {
     const now = Date.now();
-    let reminders = settings.store.reminders ?? [];
+    const reminders = settings.store.reminders ?? [];
     let changed = false;
     
     for (const reminder of reminders) {
@@ -358,7 +418,7 @@ function checkDueReminders() {
         try {
             Toasts.show({ message: `⏰ ${reminder.text}` });
         } catch (e) {
-            console.log("EGO TOOL: reminders", e);
+            remindersLog.warn("unable to show reminder toast", e);
         }
         
         if (reminder.repeatMinutes > 0) {
@@ -912,7 +972,7 @@ function checkMessageForModeration(element: HTMLElement) {
                 break;
             }
         } catch (e) {
-            console.error("Invalid regex pattern:", rule.pattern, e);
+            moderationLog.warn("invalid regex pattern — rule ignored for this message", rule.pattern, e);
         }
     }
 }
@@ -950,25 +1010,29 @@ function toggleQuickAction(id: string) {
 
 function executeQuickAction(id: string) {
     switch (id) {
-        case "toggleBadges":
+        case "toggleBadges": {
             const hideAll = settings.store.hideAllBadges ?? false;
             setAllBadgesHidden(!hideAll);
             break;
+        }
             
-        case "toggleAvatars":
+        case "toggleAvatars": {
             const uiSettings = settings.store.uiSettings ?? getDefaultUISettings();
             updateUISettings({ hideUserAvatars: !uiSettings.hideUserAvatars });
             break;
+        }
             
-        case "toggleTimestamps":
+        case "toggleTimestamps": {
             const currentUISettings = settings.store.uiSettings ?? getDefaultUISettings();
             updateUISettings({ hideMessageTimestamps: !currentUISettings.hideMessageTimestamps });
             break;
+        }
             
-        case "compactMode":
+        case "compactMode": {
             const currentSettings = settings.store.uiSettings ?? getDefaultUISettings();
             updateUISettings({ compactMode: !currentSettings.compactMode });
             break;
+        }
             
         case "clearCache":
             resetBadges();
@@ -1203,6 +1267,9 @@ export default definePlugin({
         if (settings.store.passcodeEnabled === undefined) {
             settings.store.passcodeEnabled = false;
         }
+        if (settings.store.verboseLogs === undefined) {
+            settings.store.verboseLogs = false;
+        }
         if (!settings.store.themeEngine) {
             settings.store.themeEngine = getDefaultThemeEngineSettings();
         }
@@ -1212,6 +1279,11 @@ export default definePlugin({
         
         // Apply theme engine + contextual modes
         applyThemeEngine();
+        
+        // Structured logging + command surface
+        setVerboseLogs(!!settings.store.verboseLogs);
+        startedAt = Date.now();
+        registerEgoCommands();
         
         // Get current server
         currentServerId = getCurrentServerId();
@@ -1260,6 +1332,9 @@ export default definePlugin({
         }
         
         // Teardown productivity + security + gaming
+        commandRegistry?.stop();
+        commandRegistry = null;
+        startedAt = 0;
         removeDndAutomation();
         removeReminderTicker();
         

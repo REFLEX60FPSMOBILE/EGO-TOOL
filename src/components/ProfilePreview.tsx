@@ -1,8 +1,7 @@
-import { React, useState, useEffect, useRef, useCallback } from "@webpack/common";
+import { React, useState, useEffect, useCallback } from "@webpack/common";
 import { BadgeInfo } from "../types";
 import { CardStyles, ButtonStyles } from "../styles";
 import { DiscordColors } from "../styles";
-import { CUSTOM_ATTRS } from "../utils/constants";
 
 interface ProfilePreviewProps {
     catalog: Record<string, BadgeInfo>;
@@ -36,20 +35,6 @@ const ProfilePreview: React.FC<ProfilePreviewProps> = ({
         avatar: "https://cdn.discordapp.com/embed/avatars/0.png",
         banner: "",
     });
-    const previewRef = useRef<HTMLDivElement>(null);
-
-    // Load user profile info
-    useEffect(() => {
-        loadUserProfile();
-        const interval = setInterval(loadUserProfile, 5000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Update badges from catalog
-    useEffect(() => {
-        updateBadgesFromCatalog();
-    }, [catalog, hidden]);
-
     const loadUserProfile = useCallback(() => {
         try {
             // Try to get user info from Discord DOM
@@ -82,6 +67,18 @@ const ProfilePreview: React.FC<ProfilePreviewProps> = ({
         
         setBadges(badgeList);
     }, [catalog, hidden]);
+
+    // Load user profile info
+    useEffect(() => {
+        loadUserProfile();
+        const interval = setInterval(loadUserProfile, 5000);
+        return () => clearInterval(interval);
+    }, [loadUserProfile]);
+
+    // Update badges from catalog
+    useEffect(() => {
+        updateBadgesFromCatalog();
+    }, [catalog, hidden, updateBadgesFromCatalog]);
 
     const handleBadgeClick = useCallback((badgeKey: string) => {
         onToggle(badgeKey);
@@ -255,7 +252,7 @@ const ProfilePreview: React.FC<ProfilePreviewProps> = ({
                     <strong>How to use:</strong>
                 </div>
                 <ol style={{ margin: "0", paddingLeft: "24px", lineHeight: "1.5" }}>
-                    <li>Open any Discord profile (yours or someone else's)</li>
+                    <li>Open any Discord profile (yours or someone else’s)</li>
                     <li>Badges will appear in your profile preview above</li>
                     <li><strong>Click on a badge</strong> to hide it (it will show a red ✕)</li>
                     <li><strong>Click again</strong> to show it</li>

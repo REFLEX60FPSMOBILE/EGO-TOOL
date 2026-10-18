@@ -1,4 +1,3 @@
-import type { BadgeInfo } from "../types";
 import { BADGE_CATEGORIES } from "./constants";
 import { BADGE_SELECTORS, CUSTOM_ATTRS } from "./constants";
 
@@ -96,7 +95,7 @@ export function throttle<T extends (...args: any[]) => any>(fn: T, limit: number
 }
 
 // Batch process elements
-export function batchProcess<T>(items: T[], processFn: (item: T) => void, batchSize: number = 50): void {
+export function batchProcess<T>(items: T[], processFn: (item: T) => void, batchSize = 50): void {
     for (let i = 0; i < items.length; i += batchSize) {
         const batch = items.slice(i, i + batchSize);
         requestAnimationFrame(() => {
@@ -129,7 +128,7 @@ export function hashPin(pin: string): string {
 }
 
 // Wait for selector to appear in DOM
-export function waitForSelector(selector: string, timeout: number = 10000): Promise<Element | null> {
+export function waitForSelector(selector: string, timeout = 10000): Promise<Element | null> {
     return new Promise((resolve) => {
         const startTime = Date.now();
         

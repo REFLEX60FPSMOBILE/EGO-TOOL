@@ -164,14 +164,14 @@ export const DEFAULT_MODERATION_RULES: ModerationRule[] = [
     {
         id: "hide-short-links",
         name: "Hide Shortened Links",
-        pattern: "(https?:\/\/)?(bit\.ly|tinyurl\.com|goo\.gl|ow\.ly|is\.gd)",
+        pattern: "(https?://)?(bit.ly|tinyurl.com|goo.gl|ow.ly|is.gd)",
         action: "hide",
         enabled: true,
     },
     {
         id: "warn-discord-invites",
         name: "Warn for Discord Invites",
-        pattern: "(discord\.gg|discord\.com\/invite)",
+        pattern: "(discord.gg|discord.com/invite)",
         action: "warn",
         enabled: false,
     },

@@ -1,6 +1,6 @@
 import { React, useCallback, useMemo } from "@webpack/common";
 import { QuickAction } from "../types";
-import { CardStyles, ButtonStyles, ListStyles } from "../styles";
+import { CardStyles, ListStyles } from "../styles";
 import { DiscordColors } from "../styles";
 
 interface QuickActionsProps {
@@ -31,9 +31,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         onExecute(id);
     }, [onExecute]);
 
-    const toggleAction = useCallback((id: string) => {
-        onToggle(id);
-    }, [onToggle]);
+    void onToggle;
 
     return (
         <div style={CardStyles.container}>

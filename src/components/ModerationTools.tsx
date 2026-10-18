@@ -3,7 +3,7 @@ import type { ModerationRule, ModerationStats } from "../types";
 import { MODERATION_ACTIONS } from "../utils/constants";
 import { CardStyles, InputStyles, ButtonStyles, ListStyles, SwitchStyles } from "../styles";
 import { DiscordColors } from "../styles";
-import { deepClone, generateId } from "../utils/helpers";
+import { generateId } from "../utils/helpers";
 
 interface ModerationToolsProps {
     rules: ModerationRule[];
@@ -15,18 +15,6 @@ interface ModerationToolsProps {
     onRemoveRule: (id: string) => void;
     onResetStats: () => void;
 }
-
-const ACTION_LABELS = {
-    [MODERATION_ACTIONS.HIDE]: "Hide",
-    [MODERATION_ACTIONS.WARN]: "Warn",
-    [MODERATION_ACTIONS.BLOCK]: "Block",
-};
-
-const ACTION_COLORS = {
-    [MODERATION_ACTIONS.HIDE]: DiscordColors.danger,
-    [MODERATION_ACTIONS.WARN]: DiscordColors.warning,
-    [MODERATION_ACTIONS.BLOCK]: DiscordColors.danger,
-};
 
 const ACTION_ICONS = {
     [MODERATION_ACTIONS.HIDE]: "👁️",
@@ -271,7 +259,7 @@ const ModerationTools: React.FC<ModerationToolsProps> = ({
                         <li><code>@everyone|@here</code> - Match mentions</li>
                     </ul>
                     <div style={{ marginTop: "8px" }}>
-                        Test your regex on <a href="https://regex101.com/" target="_blank" style={{ color: DiscordColors.link }}>Regex101</a>
+                        Test your regex on <a href="https://regex101.com/" target="_blank" rel="noreferrer" style={{ color: DiscordColors.link }}>Regex101</a>
                     </div>
                 </div>
             </div>

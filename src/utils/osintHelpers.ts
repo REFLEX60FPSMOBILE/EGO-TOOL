@@ -12,11 +12,8 @@ import {
 // Regular expressions for data extraction
 const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
 const PHONE_REGEX = /\b(?:\+?(\d{1,3}))?[-.\s]?\(?(\d{1,4})\)?[-.\s]?(\d{1,4})[-.\s]?(\d{1,9})\b/g;
-const URL_REGEX = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*))/g;
+const URL_REGEX = /(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*))/g;
 const DISCORD_INVITE_REGEX = /(?:discord\.gg\/|discord\.com\/invite\/|discordapp\.com\/invite\/)([a-zA-Z0-9-]+)/g;
-const YOUTUBE_REGEX = /(?:youtube\.com\/|youtu\.be\/|youtube-nocookie\.com\/)([a-zA-Z0-9_-]{11})/g;
-const TWITTER_REGEX = /(?:twitter\.com\/|x\.com\/)([a-zA-Z0-9_]+)/g;
-const INSTAGRAM_REGEX = /(?:instagram\.com\/|instagr\.am\/|www\.instagram\.com\/)([a-zA-Z0-9_.]+)/g;
 
 // URL shortener domains
 const SHORTENERS = [
@@ -45,7 +42,7 @@ export function isSafeUrl(url: string): boolean {
         const domain = new URL(url).hostname.toLowerCase();
         
         // Check if it's a known safe platform
-        for (const [platform, domains] of Object.entries(SOCIAL_PLATFORMS)) {
+        for (const domains of Object.values(SOCIAL_PLATFORMS)) {
             if (domains.some(d => domain.includes(d))) {
                 return true;
             }

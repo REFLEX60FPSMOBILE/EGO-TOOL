@@ -1,5 +1,5 @@
 import { React, useState, useCallback } from "@webpack/common";
-import { CardStyles, ButtonStyles, TabStyles } from "../../styles";
+import { TabStyles } from "../../styles";
 import { DiscordColors } from "../../styles";
 import UserLookup from "./UserLookup";
 import ServerAnalysis from "./ServerAnalysis";
@@ -66,7 +66,7 @@ const OSINTDashboard: React.FC = () => {
                 fontSize: "13px",
                 color: DiscordColors.warning,
             }}>
-                <strong>⚠️ Educational Use Only:</strong> All OSINT tools process only publicly available data through Discord's official API. No private data is accessed or stored. For educational and security research purposes only.
+                <strong>⚠️ Educational Use Only:</strong> All OSINT tools process only publicly available data through Discord’s official API. No private data is accessed or stored. For educational and security research purposes only.
             </div>
 
             {/* Tabs */}

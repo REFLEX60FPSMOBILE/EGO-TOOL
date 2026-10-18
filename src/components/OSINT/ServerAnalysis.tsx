@@ -1,8 +1,8 @@
 import { React, useState, useCallback, useEffect, useMemo } from "@webpack/common";
 import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
 import { DiscordColors } from "../../styles";
-import { DiscordGuild, GuildRole, GuildChannel, RiskLevel, RISK_LEVELS, ThreatIndicator, SecurityAssessment } from "../../types/osint";
-import { formatDate, formatNumber, generateGuildSummary } from "../../utils/osintHelpers";
+import { DiscordGuild, RiskLevel, RISK_LEVELS, ThreatIndicator, SecurityAssessment } from "../../types/osint";
+import { formatDate, formatNumber } from "../../utils/osintHelpers";
 
 // Mock data for demonstration
 const MOCK_GUILDS: DiscordGuild[] = [
@@ -141,6 +141,7 @@ const SECURITY_RECOMMENDATIONS: Record<string, string[]> = {
 
 const ServerAnalysis: React.FC = () => {
     const [selectedGuild, setSelectedGuild] = useState<DiscordGuild | null>(null);
+    const [nowTs] = useState(() => Date.now());
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<DiscordGuild[]>([]);
     const [loading, setLoading] = useState(false);
@@ -537,7 +538,7 @@ const ServerAnalysis: React.FC = () => {
                             <div style={{ fontSize: "13px", lineHeight: "1.5" }}>
                                 <div><strong>Owner ID:</strong> {selectedGuild.ownerId}</div>
                                 <div><strong>Created:</strong> {formatDate(selectedGuild.createdAt)}</div>
-                                <div><strong>Age:</strong> {Math.round((Date.now() - new Date(selectedGuild.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days</div>
+                                <div><strong>Age:</strong> {Math.round((nowTs - new Date(selectedGuild.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days</div>
                             </div>
                             
                             {selectedGuild.description && (
