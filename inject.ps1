@@ -70,6 +70,8 @@ if ($RemoveOrion) {
         Write-Info "Rebuilding Vencord (pnpm build)..."
         Push-Location $VencordDir; pnpm build; $buildCode = $LASTEXITCODE; Pop-Location
         if ($buildCode -ne 0) { Write-Fail "pnpm build failed." }
+        Write-Info "Re-installing the clean client into Discord (pnpm inject)..."
+        Push-Location $VencordDir; pnpm inject; if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Fail "pnpm inject failed." }; Pop-Location
     }
     Write-Ok "OrionQuests removed. Everything else is untouched."
     exit 0
@@ -86,6 +88,8 @@ if ($Remove) {
         Write-Info "Rebuilding Vencord (pnpm build)..."
         Push-Location $VencordDir; pnpm build; $buildCode = $LASTEXITCODE; Pop-Location
         if ($buildCode -ne 0) { Write-Fail "pnpm build failed." }
+        Write-Info "Re-installing the clean client into Discord (pnpm inject)..."
+        Push-Location $VencordDir; pnpm inject; if ($LASTEXITCODE -ne 0) { Pop-Location; Write-Fail "pnpm inject failed." }; Pop-Location
     }
     Write-Ok "EGO TOOL removed. All your other plugins and settings are untouched."
     exit 0
@@ -151,8 +155,12 @@ if ($NoBuild) {
 }
 
 # ----------------------------------------------------------------
-# 4. Rebuild (this is the actual injection into the client bundle -
-#    nothing is reinstalled or reset, your plugins/settings are safe)
+# 4. Rebuild AND install into the actual Discord client
+#    - pnpm build  : compiles the patched client into dist/
+#    - pnpm inject : official Vencord installer copy - copies the fresh dist
+#      into your installed Discord (that is the install step - without it,
+#      Discord keeps running the previously patched build)
+#    Nothing is reinstalled or reset, your plugins/settings are safe.
 # ----------------------------------------------------------------
 if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
     Write-Fail "pnpm is not installed. Install it with: npm install -g pnpm"
@@ -162,17 +170,23 @@ if (-not (Test-Path "$VencordDir\node_modules")) {
     Write-Info "Installing Vencord dependencies (pnpm i)..."
     pnpm i
 }
-Write-Info "Injecting into client bundle (pnpm build)..."
+Write-Info "Building patched client (pnpm build)..."
 pnpm build
 $buildCode = $LASTEXITCODE
+if ($buildCode -ne 0) { Pop-Location; Write-Fail "Build failed - the plugin(s) were placed in userplugins but the client was NOT patched. Fix the error above and re-run." }
+
+Write-Info "Installing the patched client into Discord (pnpm inject)..."
+Write-Host "    If the installer lists Discord versions, select yours (Space/Enter)."
+pnpm inject
+$injectCode = $LASTEXITCODE
 Pop-Location
-if ($buildCode -ne 0) { Write-Fail "Build failed - the plugin(s) were placed in userplugins but the client was NOT patched. Fix the error above and re-run." }
+if ($injectCode -ne 0) { Write-Fail "pnpm inject failed - the fresh build is in $VencordDir\dist but your Discord was not re-patched. Re-run the script to retry." }
 
 Write-Host ""
-Write-Ok "Injection successful!"
+Write-Ok "Install successful - Discord now runs this new build!"
 Write-Host ""
 Write-Host "  Next steps:"
-Write-Host "    1. Fully restart Discord (or Vesktop)."
+Write-Host "    1. Fully QUIT and restart Discord (tray icon included)."
 Write-Host "    2. Open User Settings -> Vencord -> Plugins."
 if ($Orion -or $RemoveOrion) {
     Write-Host "    3. Enable OrionQuests and type /orion status in any channel."
@@ -180,6 +194,6 @@ if ($Orion -or $RemoveOrion) {
     Write-Host "    3. Enable EGO TOOL."
 }
 Write-Host ""
-Write-Host "  Remove EGO TOOL anytime with: powershell -ExecutionPolicy Bypass -File inject.ps1 -Remove"
+Write-Host "  Remove EGO TOOL anytime with: powershell -ExecutionPolicy Bypass -File inject.ps1 -Remove (then it re-installs the clean client automatically)"
 Write-Host "  Remove OrionQuests anytime with: powershell -ExecutionPolicy Bypass -File inject.ps1 -RemoveOrion"
 Write-Host ""

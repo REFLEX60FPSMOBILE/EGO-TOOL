@@ -149,20 +149,28 @@ if [[ "$NO_BUILD" == "true" ]]; then
 fi
 
 # ----------------------------------------------------------------
-# 4. Rebuild (this is the actual injection into the client bundle -
-#    nothing is reinstalled or reset, your plugins/settings are safe)
+# 4. Rebuild AND install into the actual Discord client
+#    - pnpm build  : compiles the patched client into dist/
+#    - pnpm inject : official Vencord installer — copies the fresh dist
+#      into your installed Discord (that is the install step — without it,
+#      Discord keeps running the previously patched build)
+#    Nothing is reinstalled or reset, your plugins/settings are safe.
 # ----------------------------------------------------------------
 command -v pnpm >/dev/null 2>&1 || fail "pnpm is not installed. Install it with: npm install -g pnpm"
 cd "$VENCORD_DIR"
 [[ -d node_modules ]] || { info "Installing Vencord dependencies (pnpm i)..."; pnpm i; }
-info "Injecting into client bundle (pnpm build)..."
+info "Building patched client (pnpm build)..."
 pnpm build || fail "Build failed - the plugin(s) were placed in userplugins but the client was NOT patched. Fix the error above and re-run."
 
+info "Installing the patched client into Discord (pnpm inject)..."
+echo "   If the installer lists Discord versions, select yours (Space/Enter)."
+pnpm inject || fail "pnpm inject failed - the fresh build is in $VENCORD_DIR/dist but your Discord was not re-patched. Re-run the script to retry."
+
 echo ""
-ok "Injection successful!"
+ok "Install successful - Discord now runs this new build!"
 echo ""
 echo "  Next steps:"
-echo "    1. Fully restart Discord (or Vesktop)."
+echo "    1. Fully QUIT and restart Discord (or Vesktop) — tray icon included."
 echo "    2. Open User Settings -> Vencord -> Plugins."
 if [[ "$ACTION" == "orion" ]]; then
 printf "    3. Enable ${CYAN}OrionQuests${RESET} and type /orion status in any channel.\n"
