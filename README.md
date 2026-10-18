@@ -2,7 +2,7 @@
 
 # 🧠 EGO TOOL
 
-**Professional Vencord plugin suite — OSINT, UI customization & moderation tools.**
+**Modular Vencord plugin suite — theme engine, modes, productivity, moderation & badges.**
 
 <sub>Made by **shoyzontop** · formerly *Shoyz Tools / HideBadgesGUI*</sub>
 
@@ -24,15 +24,12 @@
 ## 🌟 Overview
 
 **EGO TOOL** is a modular, high-end plugin suite for **Vencord** (the modded Discord client).
-It bundles an educational OSINT module, deep UI customization, and powerful moderation tools into one clean, fully-typed plugin.
+It bundles a full theme engine with contextual modes, productivity tools (to-do list, reminders, client lock) and moderation tools into one clean, fully-typed plugin.
 
 ## ✨ Features
 
 | Module | What it does |
 | --- | --- |
-| 🔍 **OSINT / User Lookup** | Complete user dossiers with tabs, threat score (0–100), risk levels (SAFE → CRITICAL), public data analysis |
-| 🏰 **Server Analysis** | Server security evaluation, risk-factor analysis and detailed reports |
-| 📡 **Message Scanner** | Real-time message analysis, link extraction & classification, suspicious keyword detection |
 | 🎨 **UI Customization** | Glassmorphism themes, blur effects, dynamic dark/light/accent themes, compact mode, custom CSS |
 | 🧱 **Theme Engine** | Presets Dark / OLED / Frost (glass) / Neon / Material / Terminal / Light, variables CSS centralisées, wallpaper (URL), opacité, flou, arrondi, accent, mode Glass/Aero, mode Performance |
 | 🎯 **Modes contextuels** | Mode Focus (masque member list + animations), Mode Stream (masque les éléments sensibles), Mode Gaming (compact + notifications réduites) et Mode Staff (densité info) — plus Auto-DND automatique quand un jeu tourne |

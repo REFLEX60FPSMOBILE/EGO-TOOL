@@ -8,7 +8,6 @@ import ModerationTools from "./ModerationTools";
 import QuickActions from "./QuickActions";
 import ServerSettings from "./ServerSettings";
 import ExportImport from "./ExportImport";
-import OSINTDashboard from "./OSINT/OSINTDashboard";
 import ThemeEnginePanel from "./ThemeEnginePanel";
 import ProductivityPanel from "./ProductivityPanel";
 import type { 
@@ -164,7 +163,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         { id: "badges", label: "Badge List", icon: "🏳️" },
         { id: "themes", label: "Themes & Modes", icon: "🎨" },
         { id: "servers", label: "Per Server", icon: "🏢" },
-        { id: "osint", label: "OSINT Tools", icon: "🔍" },
         { id: "productivity", label: "Productivité", icon: "✅" },
         { id: "ui", label: "UI Options", icon: "🧩" },
         { id: "moderation", label: "Moderation", icon: "🛡️" },
@@ -230,11 +228,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         onUpdateServerSettings={onUpdateServerSettings}
                         onResetServer={onResetServer}
                     />
-                );
-            
-            case "osint":
-                return (
-                    <OSINTDashboard />
                 );
             
             case "ui":
@@ -355,7 +348,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     fontSize: "14px",
                     margin: 0,
                 }}>
-                    A comprehensive Discord tool suite with OSINT capabilities
+                    A modular Discord tool suite — theme engine, productivity and moderation
                 </p>
             </div>
 

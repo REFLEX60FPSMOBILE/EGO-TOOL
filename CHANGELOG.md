@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PasscodeLock** : verrouillage du client par PIN hashé (djb2) avec overlay plein écran et compteur d'échecs — inspiré du PasscodeLock de arg0NNY
 - **Lazy loading** des messages/channels via content-visibility en mode Performance
 - **Onglet "Productivité"** combinant ToDoList, Reminders et PasscodeLock
+- **Injecteurs** : neutralisation automatique des userplugins tiers cassés (ex. imports `copyWithToast` supprimés du Vencord actuel) avant le build — ils sont déplacés vers `ego-disabled-plugins/` au lieu de casser tout le build
+- **Module OSINT retiré** à la demande (dossiers `components/OSINT`, `modules/userLookup`, `utils/osintHelpers`, `types/osint` — jamais branché sur de vraies données)
 - **Système de commandes** `/ego-status`, `/ego mode`, `/ego remind`, `/ego stats`, `/ego debug` (via @api/Commands, désenregistrées à l'arrêt du plugin)
 - **Logger structuré** (`src/utils/logger.ts`) : préfixe coloré par module (main/autodnd/reminders/moderation/server), debug gated par le nouveau réglage **Verbose Logs** (ou `/ego debug on|off`)
 - **Base stabilisée** : ESLint 0 erreur (71 corrigés — imports inutilisés, impuretés Date.now en rendu, regex escapes, apostrophes JSX, narrowing optionnel) et typecheck strict 0 erreur
@@ -32,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modes Gaming (DND auto) et Staff
 - Plugins intégrés (ChannelTabs, ToDoList, Reminder, ChatFilter, BetterVolume…)
 - Lazy loading des channels
-- Full OSINT module (User Lookup, Server Analysis, Message Scanner)
 - Advanced UI customization (glassmorphism, dynamic themes)
 - Moderation tools (regex filters, automated actions)
 

@@ -9,7 +9,6 @@
  * - Quick actions and keyboard shortcuts
  * - Per-server settings
  * - Export/Import configurations
- * - OSINT capabilities for public data analysis
  * 
  * Author: shoyzontop
  * Version: 1.0.0
@@ -1221,7 +1220,7 @@ function setupServerObserver() {
 
 export default definePlugin({
     name: "EGO TOOL",
-    description: "A comprehensive Discord tool suite with OSINT capabilities, badge management, UI customization, and server analysis",
+    description: "A modular Discord tool suite — theme engine, Modes, productivity, moderation, badge management",
     authors: [
         { name: "shoyzontop", id: 0n },
     ],

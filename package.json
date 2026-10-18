@@ -1,10 +1,9 @@
 {
   "name": "ego-tool",
-  "description": "EGO TOOL — Professional Vencord plugin suite: OSINT, UI customization & moderation tools. Made by shoyzontop. Educational use only.",
+  "description": "EGO TOOL — Modular Vencord plugin suite: theme engine, modes, productivity, moderation & badge management. Made by shoyzontop. Educational use only.",
   "keywords": [
     "vencord",
     "discord",
-    "osint",
     "typescript",
     "react",
     "plugin",
