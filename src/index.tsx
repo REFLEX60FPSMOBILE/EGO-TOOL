@@ -17,7 +17,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
 import definePlugin, { OptionType } from "@utils/types";
-import { React, FluxDispatcher, Toasts } from "@webpack/common";
+import { React, FluxDispatcher, showToast } from "@webpack/common";
 
 // Import types
 import type { 
@@ -415,7 +415,7 @@ function checkDueReminders() {
         if (overdueBy > 60000) continue; // fired while the client was closed — leave it alone
         
         try {
-            Toasts.show({ message: `⏰ ${reminder.text}` });
+            showToast({ text: `⏰ ${reminder.text}` });
         } catch (e) {
             remindersLog.warn("unable to show reminder toast", e);
         }

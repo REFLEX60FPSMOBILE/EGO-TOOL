@@ -125,16 +125,16 @@ fi
 
 # ----------------------------------------------------------------
 # 3b. Neutralize known-broken third-party userplugins before build
-#     (e.g. plugins importing copyWithToast, which no longer exists
-#      in the current Vencord — they break the whole build)
+#     (e.g. plugins importing copyWithToast or the old Toasts object API,
+#      which no longer exist in the current Vencord — they break the whole build)
 # ----------------------------------------------------------------
 DISABLED_DIR="$VENCORD_DIR/ego-disabled-plugins"
 shopt -s nullglob
 for folder in "$USERPLUGINS_DIR"/*/; do
   name="$(basename "$folder")"
   [[ "$name" == "$PLUGIN_NAME" || "$name" == "$ORION_PLUGIN_NAME" ]] && continue
-  if grep -qrs "copyWithToast" "$folder" >/dev/null 2>&1; then
-    info "Disabling broken third-party plugin '$name' (imports copyWithToast from @utils/misc)..."
+  if grep -qrs -e "copyWithToast" -e "Toasts.show" "$folder" >/dev/null 2>&1; then
+    info "Disabling broken third-party plugin '$name' (deprecated Vencord API: copyWithToast / Toasts obj)..."
     info "  -> moved to $DISABLED_DIR/$name (put it back there manually if you need it)"
     mkdir -p "$DISABLED_DIR"
     mv "$folder" "$DISABLED_DIR/$name"

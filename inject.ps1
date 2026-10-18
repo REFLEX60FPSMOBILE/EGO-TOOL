@@ -125,20 +125,20 @@ if ($Orion) {
 
 # ----------------------------------------------------------------
 # 3b. Neutralize known-broken third-party userplugins before build
-#     (e.g. plugins importing copyWithToast, which no longer exists
-#      in the current Vencord — they break the whole build)
+#     (e.g. plugins importing copyWithToast or the old Toasts object API,
+#      which no longer exist in the current Vencord — they break the whole build)
 # ----------------------------------------------------------------
 $DisabledDir = Join-Path $VencordDir "ego-disabled-plugins"
 $brokenPlugins = @()
 Get-ChildItem -LiteralPath $UserPluginsDir -Directory -ErrorAction SilentlyContinue | ForEach-Object {
     if ($_.Name -in @($PluginName, $OrionPluginName)) { return }
     $hit = Get-ChildItem -LiteralPath $_.FullName -Recurse -Include *.tsx,*.ts -File -ErrorAction SilentlyContinue |
-        Select-String -Pattern "copyWithToast" -List -ErrorAction SilentlyContinue
+        Select-String -Pattern "copyWithToast","Toasts\\.show" -List -ErrorAction SilentlyContinue
     if ($hit) { $brokenPlugins += $_.FullName }
 }
 foreach ($broken in $brokenPlugins) {
     $name = Split-Path $broken -Leaf
-    Write-Info "Disabling broken third-party plugin '$name' (imports copyWithToast from @utils/misc)..."
+    Write-Info "Disabling broken third-party plugin '$name' (deprecated Vencord API: copyWithToast / Toasts obj)..."
     Write-Info "  -> moved to $DisabledDir\$name (put it back there manually if you need it)"
     New-Item -ItemType Directory -Force -Path $DisabledDir | Out-Null
     Move-Item -LiteralPath $broken -Destination (Join-Path $DisabledDir $name) -Force
