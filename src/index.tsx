@@ -35,7 +35,7 @@ import type {
 // Import constants and utilities
 import { 
     BADGE_SELECTORS, 
-    CUSTOM_ATTRS,
+    CUSTOM_ATTRS, 
     PRESET_THEMES,
     DEFAULT_QUICK_ACTIONS,
     DEFAULT_MODERATION_RULES,
@@ -43,19 +43,17 @@ import {
     MODERATION_ACTIONS 
 } from "./utils/constants";
 
+import { applyThemeEngine as renderThemeEngine, clearThemeEngine as resetThemeEngine } from "./utils/themeEngine";
+
 import { 
     generateBadgeKey, 
     getBadgeLabel, 
     resolveBadgeTarget, 
-    setElementHidden, 
-    isElementHidden,
-    debounce,
-    deepClone,
-    generateId,
-    waitForSelector 
+    setElementHidden,
+    debounce
 } from "./utils/helpers";
 
-import { getCurrentServerId, getServerSettings, mergeServerSettings } from "./utils/serverHelpers";
+import { getCurrentServerId } from "./utils/serverHelpers";
 
 // Import components
 import SettingsPanel from "./components/SettingsPanel";
@@ -113,6 +111,12 @@ const settings = definePluginSettings({
             // Export/Import
             onExport={() => exportSettings()}
             onImport={(data) => importSettings(data)}
+            
+            // Theme Engine
+            themeEngine={settings.store.themeEngine ?? getDefaultThemeEngineSettings()}
+            uiModes={settings.store.uiModes ?? { focus: false, stream: false }}
+            onThemeEngineUpdate={(updates) => updateThemeEngineSettings(updates)}
+            onUiModesUpdate={(updates) => updateUiModes(updates)}
         />,
     },
 }).withPrivateSettings<PluginSettings & {
@@ -152,6 +156,37 @@ function getDefaultModerationStats(): ModerationStats {
         warnedUsers: 0,
         blockedUsers: 0,
     };
+}
+
+function getDefaultThemeEngineSettings() {
+    return {
+        preset: "dark",
+        wallpaperUrl: "",
+        wallpaperOpacity: 80,
+        blur: 0,
+        radius: 8,
+        accent: "",
+        glass: false,
+        performanceMode: false,
+    };
+}
+
+function applyThemeEngine() {
+    const themeEngine = settings.store.themeEngine ?? getDefaultThemeEngineSettings();
+    const uiModes = settings.store.uiModes ?? { focus: false, stream: false };
+    renderThemeEngine(themeEngine, uiModes);
+}
+
+function updateThemeEngineSettings(updates: Partial<ReturnType<typeof getDefaultThemeEngineSettings>>) {
+    const current = settings.store.themeEngine ?? getDefaultThemeEngineSettings();
+    settings.store.themeEngine = { ...current, ...updates };
+    applyThemeEngine();
+}
+
+function updateUiModes(updates: Partial<{ focus: boolean; stream: boolean }>) {
+    const current = settings.store.uiModes ?? { focus: false, stream: false };
+    settings.store.uiModes = { ...current, ...updates };
+    applyThemeEngine();
 }
 
 function getQuickActions(): QuickAction[] {
@@ -699,6 +734,7 @@ function exportSettings(): ExportData {
             moderationRules: settings.store.moderationRules ?? [...DEFAULT_MODERATION_RULES],
             moderationStats: settings.store.moderationStats ?? getDefaultModerationStats(),
             enabledQuickActions: settings.store.enabledQuickActions ?? {},
+            keyboardShortcuts: settings.store.keyboardShortcuts ?? DEFAULT_SHORTCUTS,
         },
         serverSettings: settings.store.serverSettings ?? {},
     };
@@ -716,6 +752,7 @@ function importSettings(data: ExportData) {
             settings.store.moderationRules = data.settings.moderationRules ?? [...DEFAULT_MODERATION_RULES];
             settings.store.moderationStats = data.settings.moderationStats ?? getDefaultModerationStats();
             settings.store.enabledQuickActions = data.settings.enabledQuickActions ?? {};
+            settings.store.keyboardShortcuts = data.settings.keyboardShortcuts ?? DEFAULT_SHORTCUTS;
         }
         
         // Import server settings
@@ -864,6 +901,15 @@ export default definePlugin({
         if (!settings.store.serverSettings) {
             settings.store.serverSettings = {};
         }
+        if (!settings.store.themeEngine) {
+            settings.store.themeEngine = getDefaultThemeEngineSettings();
+        }
+        if (!settings.store.uiModes) {
+            settings.store.uiModes = { focus: false, stream: false };
+        }
+        
+        // Apply theme engine + contextual modes
+        applyThemeEngine();
         
         // Get current server
         currentServerId = getCurrentServerId();
@@ -921,6 +967,8 @@ export default definePlugin({
         });
         
         // Remove injected styles
+        resetThemeEngine();
+        
         const styles = [
             "vc-ego-tool-theme",
             "vc-hide-timestamps",

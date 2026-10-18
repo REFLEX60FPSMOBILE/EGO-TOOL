@@ -85,7 +85,8 @@ export function extractLinks(text: string): ExtractedLink[] {
                 domain,
                 isSafe: isSafeUrl(url),
                 isShortened: SHORTENERS.some(shortener => domain.includes(shortener)),
-                resolvedUrl: null
+                resolvedUrl: null,
+                threatLevel: "LOW"
             });
         } catch {
             // Invalid URL, skip

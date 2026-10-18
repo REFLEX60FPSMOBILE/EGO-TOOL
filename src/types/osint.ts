@@ -51,6 +51,9 @@ export interface AssociatedAccount {
 // Risk level classification
 export type RiskLevel = "SAFE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
+// Alias used by the user-lookup module (src/modules/userLookup)
+export type ThreatLevel = RiskLevel;
+
 // Risk level configuration
 export const RISK_LEVELS = {
     SAFE: { label: "SAFE", color: "#43b581", bg: "#36413d", emoji: "✅" },
@@ -197,6 +200,7 @@ export interface ExtractedLink {
     resolvedUrl: string | null;
     threatLevel: RiskLevel;
     description?: string;
+    emoji?: string;
 }
 
 // Extracted email
@@ -266,6 +270,23 @@ export interface SearchResults {
     messages: DiscordMessage[];
     loading: boolean;
     error: string | null;
+}
+
+// Result returned by the modular user-lookup service (src/modules/userLookup)
+export interface UserLookupResult {
+    userId: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+    createdAt: number;
+    accountAgeDays: number;
+    threatScore: number;
+    threatLevel: ThreatLevel;
+    associatedAccounts: AssociatedAccount[];
+    usernameHistory: { username: string; changedAt: string }[];
+    mutualGuilds: GuildInfo[];
+    flags: string[];
+    analyzedAt: number;
 }
 
 // User history

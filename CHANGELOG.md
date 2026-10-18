@@ -8,10 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Theme Engine** (`src/utils/themeEngine.ts` + `src/components/ThemeEnginePanel.tsx`) : presets Dark/OLED/Frost/Neon/Material/Terminal/Light basés sur variables CSS centralisées, wallpaper par URL, réglages opacité/flou/arrondi/accent, mode Glass/Aero (blur des panneaux actifs uniquement)
+- **Modes contextuels** Focus (masque member list + animations) et Stream (masque données sensibles à l'écran)
+- **Mode Performance** : désactive blur/animations/transitions
+- **Nouvel onglet "Themes & Modes"** dans le panneau de réglages
+
+### Fixed
+- 97 erreurs TypeScript et bugs runtime réparés : `useEffect` manquant (MessageScanner), `TabStyles` non importé (UserLookup), conflit d'import `ServerSettings` (SettingsPanel), types `UserLookupResult`/`ThreatLevel` manquants, styles `CardStyles.card` / `DiscordColors.muted` / `buttonSecondary` / `ListStyles.title` inexistants (~50 usages), raccourcis clavier absents de l'export, mock data OSINT, `":hover"` invalide en style React, `window.DiscordNative` non déclaré, imports inutilisés
+
+### Added
 - Recommended companion plugins guide in README (25 built-in Vencord plugins: PinDMs, BetterFolders, MemberCount, ServerInfo, PermissionsViewer, ViewRaw, MessageLogger, NoReplyMention, QuickMention, MessageClickActions, CharacterCounter, Translate, ClearURLs, AnonymiseFileNames, CallTimer, VoiceMessages, BiggerStreamPreview, PictureInPicture, WebScreenShareFixes, VolumeBooster, SpotifyControls, NoTrack, BetterSessions, BlurNSFW, RoleColorEverywhere) with use cases and risks
 - Optional `--orion` (`-Orion`) and `--remove-orion` (`-RemoveOrion`) flags on inject.sh / inject.ps1 / inject.bat to install and uninstall the OrionQuests userplugin alongside EGO TOOL
 
 ### Planned
+- Modes Gaming (DND auto) et Staff
+- Plugins intégrés (ChannelTabs, ToDoList, Reminder, ChatFilter, BetterVolume…)
+- Lazy loading des channels
 - Full OSINT module (User Lookup, Server Analysis, Message Scanner)
 - Advanced UI customization (glassmorphism, dynamic themes)
 - Moderation tools (regex filters, automated actions)

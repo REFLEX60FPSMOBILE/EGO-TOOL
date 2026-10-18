@@ -1,5 +1,14 @@
 // Core type definitions for Shoyz Tools
 
+import type { ThemeEngineSettings } from "../utils/themeEngine";
+
+export type { ThemeEngineSettings } from "../utils/themeEngine";
+
+export interface UiModes {
+    focus: boolean;
+    stream: boolean;
+}
+
 // Badge types
 export interface BadgeInfo {
     key: string;
@@ -49,7 +58,7 @@ export interface ModerationStats {
     blockedUsers: number;
 }
 
-// Keyboard shortcut types
+// Keyboard shortcut types (matched by id against the quick actions handlers)
 export interface Shortcut {
     id: string;
     name: string;
@@ -57,7 +66,6 @@ export interface Shortcut {
     ctrl: boolean;
     shift: boolean;
     alt: boolean;
-    action: () => void;
 }
 
 // Main plugin settings
@@ -84,6 +92,10 @@ export interface PluginSettings {
     
     // Keyboard shortcuts
     keyboardShortcuts: Shortcut[];
+
+    // Theme engine
+    themeEngine: ThemeEngineSettings;
+    uiModes: UiModes;
 }
 
 // Quick action types
@@ -115,6 +127,8 @@ export interface ExportData {
         moderationStats: ModerationStats;
         enabledQuickActions: Record<string, boolean>;
         keyboardShortcuts: Shortcut[];
+        themeEngine?: ThemeEngineSettings;
+        uiModes?: UiModes;
     };
     serverSettings: Record<string, ServerSettings>;
 }

@@ -80,12 +80,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({
                                         borderRadius: "6px",
                                         color: DiscordColors.textNormal,
                                         cursor: "pointer",
-                                        fontSize: "13px",
-                                        textAlign: "left",
+                                        fontSize: "13px",                                        textAlign: "left",
                                         transition: "all 0.2s ease",
-                                        ":hover": {
-                                            backgroundColor: DiscordColors.backgroundTertiary,
-                                        },
                                     }}
                                 >
                                     <span style={{ fontSize: "16px" }}>{action.icon}</span>

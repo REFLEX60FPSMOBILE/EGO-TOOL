@@ -1,4 +1,4 @@
-import { React, useState, useCallback, useMemo } from "@webpack/common";
+import { React, useState, useCallback, useMemo, useEffect } from "@webpack/common";
 import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
 import { DiscordColors } from "../../styles";
 import { 

@@ -1,15 +1,13 @@
 import { React, useState, useCallback, useEffect, useMemo } from "@webpack/common";
-import { CardStyles, ButtonStyles, InputStyles, ListStyles } from "../../styles";
+import { CardStyles, ButtonStyles, InputStyles, ListStyles, TabStyles } from "../../styles";
 import { DiscordColors } from "../../styles";
 import { DiscordUser, UserBadge, RiskLevel, RISK_LEVELS } from "../../types/osint";
 import { 
     formatDate, 
     getAccountAge, 
-    isBot, 
     hasNitro, 
     hasEarlySupporter, 
     isVerified, 
-    isModerator,
     generateUserSummary,
     calculateUserThreatScore
 } from "../../utils/osintHelpers";
@@ -39,8 +37,8 @@ const MOCK_USERS: DiscordUser[] = [
             { id: "early_supporter", name: "Early Supporter", description: "Early Discord supporter", icon: "https://cdn.discordapp.com/badge-icons/early_supporter.png", type: "discord" },
         ],
         mutualGuilds: [
-            { id: "111111111111111111", name: "Community Server", icon: "https://cdn.discordapp.com/icons/111111111111111111/a_1234567890abcdef.png", memberCount: 10000, owner: false, permissions: 0x20000000 },
-            { id: "222222222222222222", name: "Gaming Hub", icon: "https://cdn.discordapp.com/icons/222222222222222222/b_abcdef1234567890.png", memberCount: 5000, owner: true, permissions: 0x80000000 },
+            { id: "111111111111111111", name: "Community Server", icon: "https://cdn.discordapp.com/icons/111111111111111111/a_1234567890abcdef.png", memberCount: 10000, owner: false, permissions: 0x20000000, features: ["COMMUNITY"] },
+            { id: "222222222222222222", name: "Gaming Hub", icon: "https://cdn.discordapp.com/icons/222222222222222222/b_abcdef1234567890.png", memberCount: 5000, owner: true, permissions: 0x80000000, features: ["ANIMATED_ICON"] },
         ],
         mutualFriends: 42,
         email: "john.doe@example.com",
@@ -78,7 +76,7 @@ const MOCK_USERS: DiscordUser[] = [
         mutualGuilds: [],
         mutualFriends: 0,
         email: "suspicious@example.com",
-        phone: null,
+        
         ipHistory: ["192.168.1.200"],
         locations: ["Unknown"],
         previousUsernames: [
@@ -109,11 +107,11 @@ const MOCK_USERS: DiscordUser[] = [
             { id: "premium", name: "Nitro", description: "Discord Nitro subscriber", icon: "https://cdn.discordapp.com/badge-icons/premium.png", type: "discord" },
         ],
         mutualGuilds: [
-            { id: "333333333333333333", name: "Trusted Server", icon: "https://cdn.discordapp.com/icons/333333333333333333/c_1234567890abcdef.png", memberCount: 5000, owner: false, permissions: 0x20000000 },
+            { id: "333333333333333333", name: "Trusted Server", icon: "https://cdn.discordapp.com/icons/333333333333333333/c_1234567890abcdef.png", memberCount: 5000, owner: false, permissions: 0x20000000, features: ["NEWS"] },
         ],
         mutualFriends: 156,
-        email: null,
-        phone: null,
+        
+        
         ipHistory: [],
         locations: ["Verified Location"],
         previousUsernames: [],
@@ -141,11 +139,11 @@ const MOCK_USERS: DiscordUser[] = [
         createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         badges: [],
         mutualGuilds: [
-            { id: "111111111111111111", name: "Support Server", icon: "https://cdn.discordapp.com/icons/111111111111111111/a_1234567890abcdef.png", memberCount: 10000, owner: false, permissions: 0 },
+            { id: "111111111111111111", name: "Support Server", icon: "https://cdn.discordapp.com/icons/111111111111111111/a_1234567890abcdef.png", memberCount: 10000, owner: false, permissions: 0, features: [] },
         ],
         mutualFriends: 0,
-        email: null,
-        phone: null,
+        
+        
         ipHistory: [],
         locations: [],
         previousUsernames: [],
@@ -282,7 +280,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
         }
         
         // Check username history
-        if (selectedUser.previousUsernames?.length > 3) {
+        if ((selectedUser.previousUsernames?.length ?? 0) > 3) {
             factors.push(USER_THREAT_FACTORS.find(f => f.id === "frequent_username_changes")!);
         }
         
@@ -713,23 +711,23 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                                     </div>
                                 </div>
                             )}
-                            {selectedUser.locations?.length > 0 && (
+                            {!!selectedUser.locations?.length && (
                                 <div>
                                     <div style={{ fontSize: "11px", color: DiscordColors.textMuted, textTransform: "uppercase", marginBottom: "4px" }}>
                                         Locations
                                     </div>
                                     <div style={{ fontSize: "13px", lineHeight: "1.5" }}>
-                                        {selectedUser.locations.join(", ")}
+                                        {selectedUser.locations?.join(", ")}
                                     </div>
                                 </div>
                             )}
-                            {selectedUser.ipHistory?.length > 0 && (
+                            {!!selectedUser.ipHistory?.length && (
                                 <div>
                                     <div style={{ fontSize: "11px", color: DiscordColors.textMuted, textTransform: "uppercase", marginBottom: "4px" }}>
                                         IP History
                                     </div>
                                     <div style={{ fontSize: "13px", lineHeight: "1.5", wordBreak: "break-all" }}>
-                                        {selectedUser.ipHistory.join(", ")}
+                                        {selectedUser.ipHistory?.join(", ")}
                                     </div>
                                 </div>
                             )}
@@ -775,7 +773,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                             Linked social media and external accounts
                         </p>
                         
-                        {selectedUser.associatedAccounts?.length > 0 ? (
+                        {!!selectedUser.associatedAccounts?.length ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                                 {selectedUser.associatedAccounts.map((account, index) => (
                                     <div
@@ -824,7 +822,7 @@ const UserLookup: React.FC<UserLookupProps> = ({ onUserSelect }) => {
                     <div style={CardStyles.card}>
                         <h4 style={CardStyles.cardTitle}>Username History</h4>
                         
-                        {selectedUser.previousUsernames?.length > 0 ? (
+                        {!!selectedUser.previousUsernames?.length ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                                 {selectedUser.previousUsernames.map((username, index) => (
                                     <div

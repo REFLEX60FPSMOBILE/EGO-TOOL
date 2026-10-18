@@ -34,6 +34,8 @@ It bundles an educational OSINT module, deep UI customization, and powerful mode
 | 🏰 **Server Analysis** | Server security evaluation, risk-factor analysis and detailed reports |
 | 📡 **Message Scanner** | Real-time message analysis, link extraction & classification, suspicious keyword detection |
 | 🎨 **UI Customization** | Glassmorphism themes, blur effects, dynamic dark/light/accent themes, compact mode, custom CSS |
+| 🧱 **Theme Engine** | Presets Dark / OLED / Frost (glass) / Neon / Material / Terminal / Light, variables CSS centralisées, wallpaper (URL), opacité, flou, arrondi, accent, mode Glass/Aero, mode Performance |
+| 🎯 **Modes contextuels** | Mode Focus (masque member list + animations) et Mode Stream (masque les éléments sensibles à l'écran) |
 | 🛡️ **Moderation** | Regex-based filter rules, automated actions, moderation stats |
 | 🏅 **Badge Manager** | Visual badge catalog, per-badge or hide-all control, per-server overrides |
 | ⌨️ **Productivity** | Global keyboard shortcuts, quick actions, per-server settings, export/import configs |
@@ -150,6 +152,18 @@ After injecting EGO TOOL, open **Settings → Vencord → Plugins** and tick the
 - **Use:** restart Discord, then type `/orion status` in any channel; `/orion start` begins the cycle. Settings live in **Settings → Vencord → UserPlugins → OrionQuests**.
 - **Desktop only** — Discord's internal stores don't exist on web/mobile.
 - ⚠️ **Read the project's warning before enabling it:** Discord has been enforcing against quest automation since April 2026 (quest restrictions up to ~14 days and named `Account Standing` violations have been reported). The achievement bypass runs a real OAuth2 authorization with your account — if you can't afford to lose it, don't run this on it. **You use it entirely at your own risk; Orion is not part of EGO TOOL and is not endorsed by its author.**
+
+## 🗺️ Roadmap — "Nexus" vision
+
+EGO TOOL évolue vers un client Discord amélioré, modulaire et personnalisable :
+
+- **Thèmes CSS avancés** — dark, OLED, glass/frost, neon, material, terminal, light, wallpapers ✅ *(moteur livré)*
+- **Modes contextuels** — Focus ✅, Stream ✅, puis Gaming (DND auto au lancement d'un jeu) et Staff (permissions/audit log sous licence server)
+- **Plugins intégrés** — productivité (ChannelTabs, ToDoList, Reminder), chat (translator, ChatFilter, MessageScanAI), vocal/stream (BetterVolume, VoiceEvents), sécurité (PasscodeLock, FileNameRandomization), performance (lazy loading channels)
+- **Performance-first** — blur/GIF/animations optionnels ✅ *(mode Performance)*, lazy loading, cache d'assets
+- **UI modulaire** — panneaux déplaçables, collapsibles, masquables
+
+> La plupart des plugins listés existent déjà (25 plugins officiels Vencord sont documentés plus haut — voir « Recommended companion plugins »). Les éléments marqués ✅ sont implémentés nativement dans EGO TOOL.
 
 ## 🏛️ Join Our Discord
 

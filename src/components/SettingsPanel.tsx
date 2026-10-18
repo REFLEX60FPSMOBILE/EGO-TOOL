@@ -9,7 +9,18 @@ import QuickActions from "./QuickActions";
 import ServerSettings from "./ServerSettings";
 import ExportImport from "./ExportImport";
 import OSINTDashboard from "./OSINT/OSINTDashboard";
-import type { BadgeInfo, UICustomization, ModerationRule, ModerationStats, QuickAction, ServerSettings, ExportData } from "../types";
+import ThemeEnginePanel from "./ThemeEnginePanel";
+import type { 
+    BadgeInfo, 
+    UICustomization, 
+    ModerationRule, 
+    ModerationStats, 
+    QuickAction, 
+    ServerSettings as ServerSettingsConfig,
+    ExportData,
+    UiModes
+} from "../types";
+import type { ThemeEngineSettings } from "../utils/themeEngine";
 
 interface SettingsPanelProps {
     // Badges
@@ -42,10 +53,16 @@ interface SettingsPanelProps {
     onQuickActionExecute: (id: string) => void;
     
     // Server Settings
-    serverSettings: Record<string, ServerSettings>;
+    serverSettings: Record<string, ServerSettingsConfig>;
     currentServerId: string | null;
-    onUpdateServerSettings: (serverId: string, updates: Partial<ServerSettings>) => void;
+    onUpdateServerSettings: (serverId: string, updates: Partial<ServerSettingsConfig>) => void;
     onResetServer: (serverId: string) => void;
+
+    // Theme Engine
+    themeEngine: ThemeEngineSettings;
+    uiModes: UiModes;
+    onThemeEngineUpdate: (updates: Partial<ThemeEngineSettings>) => void;
+    onUiModesUpdate: (updates: Partial<UiModes>) => void;
     
     // Export/Import
     onExport: () => ExportData;
@@ -88,6 +105,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     onUpdateServerSettings,
     onResetServer,
     
+    // Theme Engine
+    themeEngine,
+    uiModes,
+    onThemeEngineUpdate,
+    onUiModesUpdate,
+    
     // Export/Import
     onExport,
     onImport,
@@ -97,9 +120,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     const tabs = useMemo(() => [
         { id: "profile", label: "My Profile", icon: "👤" },
         { id: "badges", label: "Badge List", icon: "🏳️" },
+        { id: "themes", label: "Themes & Modes", icon: "🎨" },
         { id: "servers", label: "Per Server", icon: "🏢" },
         { id: "osint", label: "OSINT Tools", icon: "🔍" },
-        { id: "ui", label: "UI Customization", icon: "🎨" },
+        { id: "ui", label: "UI Options", icon: "🧩" },
         { id: "moderation", label: "Moderation", icon: "🛡️" },
         { id: "actions", label: "Quick Actions", icon: "⚡" },
         { id: "export", label: "Export/Import", icon: "📦" },
@@ -124,6 +148,15 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         onToggle={onBadgeToggle}
                         onToggleAll={onBadgeToggleAll}
                         onScan={onScanBadges}
+                    />
+                );
+            case "themes":
+                return (
+                    <ThemeEnginePanel
+                        themeEngine={themeEngine}
+                        uiModes={uiModes}
+                        onThemeEngineUpdate={onThemeEngineUpdate}
+                        onUiModesUpdate={onUiModesUpdate}
                     />
                 );
             

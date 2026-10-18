@@ -1,5 +1,7 @@
 // Constants for EGO TOOL plugin
 
+import type { ModerationRule } from "../types";
+
 // CSS selectors for badges
 export const BADGE_SELECTORS = {
     IMG: [
@@ -32,7 +34,7 @@ export const BADGE_CATEGORIES = {
     VENCORD: "vencord",
     CUSTOM: "custom",
     OTHER: "other",
-};
+} as const;
 
 // Moderation actions
 export const MODERATION_ACTIONS = {
@@ -158,7 +160,7 @@ export const DEFAULT_QUICK_ACTIONS = {
 };
 
 // Default moderation rules
-export const DEFAULT_MODERATION_RULES = [
+export const DEFAULT_MODERATION_RULES: ModerationRule[] = [
     {
         id: "hide-short-links",
         name: "Hide Shortened Links",

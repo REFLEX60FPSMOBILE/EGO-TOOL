@@ -2,8 +2,10 @@ import type { BadgeInfo } from "../types";
 import { BADGE_CATEGORIES } from "./constants";
 import { BADGE_SELECTORS, CUSTOM_ATTRS } from "./constants";
 
+type BadgeKind = typeof BADGE_CATEGORIES[keyof typeof BADGE_CATEGORIES];
+
 // Generate a unique key for a badge
-export function generateBadgeKey(img: HTMLImageElement): { key: string; kind: string } {
+export function generateBadgeKey(img: HTMLImageElement): { key: string; kind: BadgeKind } {
     const src = img.currentSrc || img.src || "";
     
     // Official Discord badges

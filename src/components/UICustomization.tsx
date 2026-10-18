@@ -23,11 +23,12 @@ const UICustomizationPanel: React.FC<UICustomizationProps> = ({ settings, onUpda
         setCustomTheme((prev) => ({
             ...prev,
             colors: {
+                ...settings.theme.colors,
                 ...prev.colors,
                 [color]: value,
             },
         }));
-    }, []);
+    }, [settings.theme.colors]);
 
     const handleApplyCustomTheme = useCallback(() => {
         onUpdate({

@@ -1,7 +1,19 @@
 // Server-specific settings utilities for EGO TOOL
 
 import { BADGE_SELECTORS, CUSTOM_ATTRS } from "./constants";
-import { generateBadgeKey, getBadgeLabel, resolveBadgeTarget, setElementHidden } from "./helpers";
+import { generateBadgeKey, resolveBadgeTarget, setElementHidden } from "./helpers";
+
+declare global {
+    interface Window {
+        DiscordNative?: {
+            app?: {
+                guilds?: {
+                    getCurrentGuild?: () => { id?: string } | null;
+                };
+            };
+        };
+    }
+}
 
 // Get current server ID
 export function getCurrentServerId(): string | null {
@@ -55,7 +67,7 @@ export function applyServerBadgeSettings(serverId: string, settings: {
     const { hideAll, hiddenBadges } = settings;
     
     // Apply to all existing badges
-    document.querySelectorAll<HTMLElement>(BADGE_SELECTORS.IMG).forEach((img) => {
+    document.querySelectorAll<HTMLImageElement>(BADGE_SELECTORS.IMG).forEach((img) => {
         if (!img.src) return;
         
         const { key } = generateBadgeKey(img);

@@ -1,6 +1,5 @@
 import { CSSProperties } from "@webpack/common";
 
-// Discord Colors
 export const DiscordColors = {
     primary: "#5865f2",
     primaryHover: "#4752c4",
@@ -13,6 +12,8 @@ export const DiscordColors = {
     warning: "#faa61a",
     warningHover: "#e09500",
     info: "#7289da",
+    muted: "#72767d",
+    buttonSecondary: "#4e5d6c",
     link: "#00aff4",
     backgroundPrimary: "var(--background-primary, #36393f)",
     backgroundSecondary: "var(--background-secondary, #2f3136)",
@@ -186,8 +187,14 @@ export const InputStyles = {
     } as CSSProperties,
 };
 
-// Card styles
 export const CardStyles = {
+    card: {
+        padding: "16px",
+        backgroundColor: DiscordColors.backgroundSecondary,
+        borderRadius: "8px",
+        border: `1px solid ${DiscordColors.border}`,
+    } as CSSProperties,
+
     container: {
         display: "flex",
         flexDirection: "column",
@@ -246,8 +253,14 @@ export const CardStyles = {
     } as CSSProperties,
 };
 
-// List styles
 export const ListStyles = {
+    title: {
+        color: DiscordColors.textNormal,
+        fontSize: "14px",
+        fontWeight: 600,
+        margin: "0 0 8px 0",
+    } as CSSProperties,
+
     container: {
         display: "flex",
         flexDirection: "column",
